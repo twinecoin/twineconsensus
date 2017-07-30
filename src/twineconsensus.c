@@ -1,5 +1,6 @@
 #include "twineconsensus.h"
+#include "config.h"
 
-int test(int x) {
-  return x + 2;
+uint32_t twlib_test_version(uint32_t version) {
+  return version <= (uint32_t) TWCON_IF_VER;
 }

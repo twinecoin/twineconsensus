@@ -7,18 +7,24 @@ config.status
 configure
 .deps/
 libtool
-config.h
-config.hin
-stamp-h1
+stamp-h*
 
 build-aux/
 
 out/
 
 src/.libs/
+src/config.h*
 
 src/twineconsensustest
 src/twineconsensustest.exe
+
+tests/*.trs
+tests/.libs/
+tests/*.log
+
+tests/test_version_check
+tests/test_version_check.exe
 
 *.o
 *.lo

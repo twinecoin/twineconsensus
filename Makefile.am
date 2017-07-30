@@ -1,3 +1,3 @@
 AUTOMAKE_OPTIONS = foreign
-SUBDIRS = src
 ACLOCAL_AMFLAGS = -I build-aux/m4
+SUBDIRS = src . tests
