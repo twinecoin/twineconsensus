@@ -26,6 +26,9 @@ tests/*.log
 tests/test_version_check
 tests/test_version_check.exe
 
+tests/test_u256
+tests/test_u256.exe
+
 *.o
 *.lo
 *.la
