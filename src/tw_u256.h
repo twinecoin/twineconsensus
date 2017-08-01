@@ -33,4 +33,28 @@ int tw_add(tw_u256* y, tw_u256* a, tw_u256* b);
  */
 int tw_sub(tw_u256* y, tw_u256* a, tw_u256* b);
 
+/* Multiply by a u32 with word left_shift
+ * y = (a * b) << (32 * (left_shift & 7))
+ * Returns 1 on overflow
+ */
+int tw_mul_32(tw_u256* y, tw_u256* a, tw_u32 b, tw_u32 left_shift);
+
+/* Multiply with overflow
+ * y = a * b
+ * returns 1 on overflow
+ */
+int tw_mul(tw_u256* y, tw_u256* a, tw_u256* b);
+
+/* Set to a tw_u256
+ * y = a
+ */
+void tw_set_256(tw_u256* y, tw_u256* a);
+
+int tw_mul(tw_u256* y, tw_u256* a, tw_u256* b);
+
+/* Set to a tw_u32
+ * y = (tw_u256) a
+ */
+void tw_set_32(tw_u256* y, tw_u32 a);
+
 #endif
