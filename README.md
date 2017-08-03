@@ -1,11 +1,11 @@
-TwineCoin Consensus Library
+Twinecoin Consensus Library
 ===========================
 
-This is the TwineCoin consensus library.  
+This is the Twinecoin consensus library.
 
-This library defines the consensus rules for TwineCoin.  The implementation is
+This library defines the consensus rules for Twinecoin.  The implementation is
 minimal and does not include any functionality other than required to define
-the TwineCoin consensus rules.
+the Twinecoin consensus rules.
 
 Building
 --------
