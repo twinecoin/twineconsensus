@@ -15,6 +15,7 @@ out/
 
 src/.libs/
 src/config.h*
+src/tw_lic_check
 
 src/twineconsensustest
 src/twineconsensustest.exe
@@ -22,6 +23,7 @@ src/twineconsensustest.exe
 tests/*.trs
 tests/.libs/
 tests/*.log
+tests/tw_lic_check
 
 tests/test_version_check
 tests/test_version_check.exe

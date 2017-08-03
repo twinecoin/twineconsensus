@@ -11,7 +11,7 @@ define(_TWCON_IF_REV,   0)   # Increment for changes that are back/forward compa
 define(_TWCON_IF_AGE,   0)   # Increment if interface changes are backward compatible (zero otherwise)
 
 # Initialize Automake
-AC_INIT([TwineCoin Consensus Library],
+AC_INIT([Twinecoin Consensus Library],
         [_TWCON_MAJ, _TWCON_MIN, _TWCON_REV],
         [https://github.com/twinecoin/twineconsensus/issues],
         [twineconsensus],
