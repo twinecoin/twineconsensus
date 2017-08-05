@@ -23,6 +23,17 @@ START_TEST (test_tw_equal) {
 }
 END_TEST
 
+START_TEST (test_tw_compare) {
+  tw_u256 a, b;
+  for (int i = 0; i < U256_TEST_VECTORS_256X256_LENGTH; i++) {
+    a = u256_test_vectors_256x256[i].a;
+    b = u256_test_vectors_256x256[i].b;
+    int compare = u256_test_vectors_256x256[i].a_comp_b;
+    ck_assert_msg(tw_compare(&a, &b) == compare, "Comparison check failure for vector %d", i);
+  }
+}
+END_TEST
+
 START_TEST (test_tw_add) {
   tw_u256 a, b, y;
   for (int i = 0; i < U256_TEST_VECTORS_256X256_LENGTH; i++) {
@@ -59,6 +70,21 @@ START_TEST (test_tw_mul) {
 }
 END_TEST
 
+START_TEST (test_tw_div_rem) {
+  tw_u256 a, b, y, z;
+  for (int i = 0; i < U256_TEST_VECTORS_256X256_LENGTH; i++) {
+    a = u256_test_vectors_256x256[i].a;
+    b = u256_test_vectors_256x256[i].b;
+    int div_by_0 = u256_test_vectors_256x256[i].div_by_0;
+    ck_assert_msg(tw_div_rem(&y, &z, &a, &b) == div_by_0, "Divide by zero mismatch for vector %d", i);
+    if (!div_by_0) {
+      ck_assert_msg(tw_equal(&y, &u256_test_vectors_256x256[i].a_div_b), "Division mismatch for vector %d", i);
+      ck_assert_msg(tw_equal(&z, &u256_test_vectors_256x256[i].a_rem_b), "Remainder mismatch for vector %d", i);
+    }
+  }
+}
+END_TEST
+
 // u256xu32 Binary Tests
 
 START_TEST (test_tw_mul_32) {
@@ -72,6 +98,36 @@ START_TEST (test_tw_mul_32) {
     int overflow = u256_test_vectors_256x32[i].a_mul_b_overflow;
     ck_assert_msg(tw_mul_32(&y, &a, b, shift) == overflow, "Mul32 overflow mismatch for vector %d", i);
     ck_assert_msg(tw_equal(&y, &u256_test_vectors_256x32[i].a_mul_b), "Mul32 mismatch for vector %d", i);
+  }
+}
+END_TEST
+
+START_TEST (test_tw_add_32) {
+  tw_u256 a, y;
+  tw_u32 b;
+  tw_u32 shift;
+  for (int i = 0; i < U256_TEST_VECTORS_256X32_LENGTH; i++) {
+    a = u256_test_vectors_256x32[i].a;
+    b = u256_test_vectors_256x32[i].b;
+    shift = u256_test_vectors_256x32[i].s;
+    int carry = u256_test_vectors_256x32[i].a_add_b_carry;
+    ck_assert_msg(tw_add_32(&y, &a, b, shift) == carry, "Add32 carry mismatch for vector %d", i);
+    ck_assert_msg(tw_equal(&y, &u256_test_vectors_256x32[i].a_add_b), "Add32 mismatch for vector %d", i);
+  }
+}
+END_TEST
+
+START_TEST (test_tw_sub_32) {
+  tw_u256 a, y;
+  tw_u32 b;
+  tw_u32 shift;
+  for (int i = 0; i < U256_TEST_VECTORS_256X32_LENGTH; i++) {
+    a = u256_test_vectors_256x32[i].a;
+    b = u256_test_vectors_256x32[i].b;
+    shift = u256_test_vectors_256x32[i].s;
+    int borrow = u256_test_vectors_256x32[i].a_sub_b_borrow;
+    ck_assert_msg(tw_sub_32(&y, &a, b, shift) == borrow, "Sub32 borrow mismatch for vector %d", i);
+    ck_assert_msg(tw_equal(&y, &u256_test_vectors_256x32[i].a_sub_b), "Sub32 mismatch for vector %d", i);
   }
 }
 END_TEST
@@ -104,10 +160,14 @@ Suite * version_check_suite(void) {
   tc_core = tcase_create("Check for tw_u256");
 
   tcase_add_test(tc_core, test_tw_equal);
+  tcase_add_test(tc_core, test_tw_compare);
   tcase_add_test(tc_core, test_tw_add);
+  tcase_add_test(tc_core, test_tw_add_32);
   tcase_add_test(tc_core, test_tw_sub);
-  tcase_add_test(tc_core, test_tw_mul_32);
+  tcase_add_test(tc_core, test_tw_sub_32);
   tcase_add_test(tc_core, test_tw_mul);
+  tcase_add_test(tc_core, test_tw_mul_32);
+  tcase_add_test(tc_core, test_tw_div_rem);
   tcase_add_test(tc_core, test_tw_set);
   suite_add_tcase(s, tc_core);
 
