@@ -2,12 +2,14 @@
  * The file is licenced under the MIT software license, see LICENCE
  * or http://www.opensource.org/licenses/mit-license.php.
  */
-#ifndef TW_U256_h
-#define TW_U256_h
+#ifndef TW_U256_H
+#define TW_U256_H
 
 #include <stdint.h>
 
 /* Shorter type names */
+typedef uint8_t tw_u8;
+typedef int8_t tw_i8;
 typedef uint32_t tw_u32;
 typedef int32_t tw_i32;
 typedef uint64_t tw_u64;

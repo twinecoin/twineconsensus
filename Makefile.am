@@ -1,3 +1,3 @@
 AUTOMAKE_OPTIONS = foreign
 ACLOCAL_AMFLAGS = -I build-aux/m4
-SUBDIRS = src . tests
+SUBDIRS = secp256k1 src . tests

@@ -31,6 +31,9 @@ tests/test_version_check.exe
 tests/test_u256_check
 tests/test_u256_check.exe
 
+tests/test_sha256_check
+tests/test_sha256_check.exe
+
 *.o
 *.lo
 *.la

@@ -16,9 +16,9 @@ The library is built from the root directory.
     ./configure
     make
     make check
-    make install
+    make install [optional]
 
-The build result is placed in the ./out directory.
+The build result is placed in the ./out directory by default.
 
 
 Cross Compiling Windows DLL

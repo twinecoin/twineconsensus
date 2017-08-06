@@ -30,6 +30,9 @@ AC_DEFINE(TWCON_IF_VER, _TWCON_IF_VER, [Twinecoin Interface Version])
 AC_DEFINE(TWCON_IF_REV, _TWCON_IF_REV, [Twinecoin Interface Revision])
 AC_DEFINE(TWCON_IF_AGE, _TWCON_IF_AGE, [Twinecoin Interface Age])
 
+# Set secp256k1 library as sub-package
+AC_CONFIG_SUBDIRS([secp256k1])
+
 # Send defines to config.h
 AC_CONFIG_HEADERS([src/config.h])
 
