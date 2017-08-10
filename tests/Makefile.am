@@ -1,4 +1,4 @@
-AM_CFLAGS =                   -I$(top_srcdir)/include -I$(top_srcdir)/secp256k1/src @CHECK_CFLAGS@
+AM_CFLAGS =                   -I$(top_srcdir)/include -I$(top_srcdir)/secp256k1/src -std=c99 @CHECK_CFLAGS@
 LDADD =                       $(top_builddir)/src/libtwineconsensus.la @CHECK_LIBS@
 
 CLEANFILES =                  tw_lic_check

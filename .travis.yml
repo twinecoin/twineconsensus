@@ -1,0 +1,8 @@
+language: c
+addons:
+  apt:
+    packages: check
+sudo: false
+dist: trusty
+before_script: ./autogen.sh
+script: ./configure && make && make check
