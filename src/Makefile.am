@@ -1,0 +1,18 @@
+AM_CFLAGS                    = -I$(top_srcdir)/include -fvisibility=hidden -std=c99 -pedantic
+
+CLEANFILES                   = tw_lic_check
+
+lib_LTLIBRARIES		     = libtwineconsensus.la
+libtwineconsensus_la_SOURCES = twineconsensus.c
+libtwineconsensus_la_LDFLAGS = -no-undefined -version-info @twcon_ver@:@twcon_rev@:@twcon_age@
+
+include_HEADERS              = ../include/twineconsensus.h
+
+all-local: tw_lic_check
+
+install-exec-hook:
+	../scripts/install_natives.sh $(host) $(prefix) @twcon_ver@ $(TW_NATIVE_PATH)
+
+tw_lic_check: $(include_HEADERS) $(libtwineconsensus_la_SOURCES)
+	../scripts/check_licence.sh $(include_HEADERS) $(libtwineconsensus_la_SOURCES)
+	touch tw_lic_check
