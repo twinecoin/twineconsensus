@@ -6,6 +6,7 @@ config.log
 config.status
 configure
 .deps/
+.dirstamp/
 libtool
 stamp-h*
 
@@ -20,13 +21,15 @@ src/tw_lic_check
 src/twineconsensustest
 src/twineconsensustest.exe
 
+src/math/src/.dirstamp
+
 tests/*.trs
 tests/.libs/
 tests/*.log
 tests/tw_lic_check
 
-tests/test_placeholder
-tests/test_placeholder.exe
+tests/test_uint
+tests/test_uint.exe
 
 *.o
 *.lo

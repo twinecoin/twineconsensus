@@ -40,7 +40,7 @@ AC_CONFIG_SRCDIR([src/twineconsensus.c])
 AC_PREFIX_DEFAULT([${PWD}/out])
 
 # General automake script init
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([subdir-objects])
 
 # Verify c compiler
 AC_PROG_CC

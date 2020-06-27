@@ -3,7 +3,7 @@ AM_CFLAGS                    = -I$(top_srcdir)/include -fvisibility=hidden -std=
 CLEANFILES                   = tw_lic_check
 
 lib_LTLIBRARIES		     = libtwineconsensus.la
-libtwineconsensus_la_SOURCES = twineconsensus.c
+libtwineconsensus_la_SOURCES = twineconsensus.c ./math/src/tw_uint.c
 libtwineconsensus_la_LDFLAGS = -no-undefined -version-info @twcon_ver@:@twcon_rev@:@twcon_age@
 
 include_HEADERS              = ../include/twineconsensus.h

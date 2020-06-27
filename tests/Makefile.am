@@ -4,14 +4,14 @@ AM_LDFLAGS =                  -static
 
 CLEANFILES =                  tw_lic_check
 
-TESTS =                       test_placeholder
-check_PROGRAMS =              test_placeholder
+TESTS =                       test_uint
+check_PROGRAMS =              test_uint
 
 TW_TWINE_HEADER =             $(top_builddir)/include/twineconsensus.h vectors/*.h
 
-test_placeholder_SOURCES =    test_placeholder.c $(TW_TWINE_HEADER)
+test_uint_SOURCES =           test_uint.c $(TW_TWINE_HEADER)
 
-TW_ALL_SRC =                  $(test_placeholder_SOURCES)
+TW_ALL_SRC =                  $(test_uint_SOURCES)
 
 all-local: tw_lic_check
 
