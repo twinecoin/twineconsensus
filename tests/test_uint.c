@@ -65,6 +65,22 @@ START_TEST (test_tw_add) {
 }
 END_TEST
 
+START_TEST (test_tw_add_32_lshift) {
+  tw_u512 a, y;
+  tw_u64 b;
+  tw_u32 shift;
+  for (int i = 0; i < U512_TEST_VECTORS_512X64_LENGTH; i++) {
+    a = u512_test_vectors_512x64[i].a;
+    b = u512_test_vectors_512x64[i].b;
+    shift = u512_test_vectors_512x64[i].s;
+    int carry = u512_test_vectors_512x64[i].a_add_b_carry;
+    ck_assert_msg(tw_add_32_lshift(&y, &a, b, shift) == carry, "Addition with left shift carry check failed for vector %d", i);
+    ck_assert_msg(tw_equal(&y, &u512_test_vectors_512x64[i].a_add_b), "Addition with left shift mismatch for vector %d", i);
+  }
+}
+END_TEST
+
+
 Suite * uint_suite(void) {
   Suite *s;
   TCase *tc_core;
@@ -78,6 +94,7 @@ Suite * uint_suite(void) {
   tcase_add_test(tc_core, test_tw_equal);
   tcase_add_test(tc_core, test_tw_compare);
   tcase_add_test(tc_core, test_tw_add);
+  tcase_add_test(tc_core, test_tw_add_32_lshift);
   suite_add_tcase(s, tc_core);
 
   return s;

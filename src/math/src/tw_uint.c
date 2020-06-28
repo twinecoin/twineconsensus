@@ -46,11 +46,51 @@ int tw_compare(const tw_u512* a, const tw_u512* b) {
   return 0;
 }
 
+tw_u64 tw_prop_carry(tw_u64* y, tw_u64 a, tw_u64 carry) {
+  *y = a + carry;
+  tw_u64 carry_out = a == TW_U64_MAX && carry;
+  return carry_out != 0;
+}
+
+tw_u64 tw_add_word(tw_u64* y, tw_u64 a, tw_u64 b, tw_u64 carry) {
+  *y = a + b + carry;
+  tw_u64 carry_out = (b == TW_U64_MAX && carry) || (*y < a);
+  return carry_out != 0;
+}
+
 int tw_add(tw_u512* y, const tw_u512* a, const tw_u512* b) {
   tw_u64 carry = 0;
   for (int i = 0; i < 8; i++) {
-    y->d[i] = a->d[i] + b->d[i] + carry;
-    carry = (b->d[i] == TW_U64_MAX && carry) || (y->d[i] < a->d[i]);
+    carry = tw_add_word(&y->d[i], a->d[i], b->d[i], carry);
+  }
+  return carry != 0;
+}
+
+int tw_add_32_lshift(tw_u512* y, const tw_u512* a, const tw_u64 b, const tw_u32 left_shift) {
+  int masked_shift = left_shift & 15;
+  tw_u64 carry = 0;
+  int first = masked_shift >> 1;
+  int i;
+  for (i = 0; i < first; i++) {
+    y->d[i] = a->d[i];
+  }
+  if ((masked_shift & 1) == 0) {
+    carry = tw_add_word(&y->d[i], a->d[i], b, carry);
+  } else {
+    carry = tw_add_word(&y->d[i], a->d[i], b << 32, carry);
+    if (i < 7) {
+      i++;
+      carry = tw_add_word(&y->d[i], a->d[i], (b >> 32) & TW_U32_MAX, carry);
+    } else {
+      carry = carry || (b >> 32) != 0;
+    }
+  }
+  i++;
+  for (;i < 8 && carry != 0; i++) {
+    carry = tw_prop_carry(&y->d[i], a->d[i], carry);
+  }
+  for (;i < 8; i++) {
+    y->d[i] = a->d[i];
   }
   return carry != 0;
 }
