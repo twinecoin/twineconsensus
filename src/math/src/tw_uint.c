@@ -58,6 +58,12 @@ tw_u64 tw_add_word(tw_u64* y, tw_u64 a, tw_u64 b, tw_u64 carry) {
   return carry_out != 0;
 }
 
+tw_u64 tw_sub_word(tw_u64* y, tw_u64 a, tw_u64 b, tw_u64 borrow) {
+  *y = a - b - borrow;
+  tw_u64 borrow_out = (b == TW_U64_MAX && borrow) || (*y > a);
+  return borrow_out != 0;
+}
+
 int tw_add(tw_u512* y, const tw_u512* a, const tw_u512* b) {
   tw_u64 carry = 0;
   for (int i = 0; i < 8; i++) {
@@ -93,4 +99,12 @@ int tw_add_32_lshift(tw_u512* y, const tw_u512* a, const tw_u64 b, const tw_u32 
     y->d[i] = a->d[i];
   }
   return carry != 0;
+}
+
+int tw_sub(tw_u512* y, const tw_u512* a, const tw_u512* b) {
+  tw_u64 borrow = 0;
+  for (int i = 0; i < 8; i++) {
+    borrow = tw_sub_word(&y->d[i], a->d[i], b->d[i], borrow);
+  }
+  return borrow != 0;
 }

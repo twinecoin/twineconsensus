@@ -69,4 +69,10 @@ int tw_add(tw_u512* y, const tw_u512* a, const tw_u512* b);
  */
 int tw_add_32_lshift(tw_u512* y, const tw_u512* a, const tw_u64 b, const tw_u32 left_shift);
 
+/* Subtraction with borrow
+ * y = a - b
+ * Returns 1 on borrow
+ */
+int tw_sub(tw_u512* y, const tw_u512* a, const tw_u512* b);
+
 #endif

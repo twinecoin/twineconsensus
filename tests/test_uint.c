@@ -80,6 +80,17 @@ START_TEST (test_tw_add_32_lshift) {
 }
 END_TEST
 
+START_TEST (test_tw_sub) {
+  tw_u512 a, b, y;
+  for (int i = 0; i < U512_TEST_VECTORS_512X512_LENGTH; i++) {
+    a = u512_test_vectors_512x512[i].a;
+    b = u512_test_vectors_512x512[i].b;
+    int borrow = u512_test_vectors_512x512[i].a_sub_b_borrow;
+    ck_assert_msg(tw_sub(&y, &a, &b) == borrow, "Subtraction carry check failed for vector %d", i);
+    ck_assert_msg(tw_equal(&y, &u512_test_vectors_512x512[i].a_sub_b), "Subtraction mismatch for vector %d", i);
+  }
+}
+END_TEST
 
 Suite * uint_suite(void) {
   Suite *s;
@@ -95,6 +106,7 @@ Suite * uint_suite(void) {
   tcase_add_test(tc_core, test_tw_compare);
   tcase_add_test(tc_core, test_tw_add);
   tcase_add_test(tc_core, test_tw_add_32_lshift);
+  tcase_add_test(tc_core, test_tw_sub);
   suite_add_tcase(s, tc_core);
 
   return s;
