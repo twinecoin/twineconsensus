@@ -15,7 +15,18 @@ START_TEST (test_tw_equal) {
     a = u512_test_vectors_512x512[i].a;
     b = u512_test_vectors_512x512[i].b;
     int equal = u512_test_vectors_512x512[i].a_equal_b;
-    ck_assert_msg(tw_equal(&a, &b) == equal, "Equality check failured for vector %d", i);
+    ck_assert_msg(tw_equal(&a, &b) == equal, "Equality check failed for vector %d", i);
+  }
+}
+END_TEST
+
+START_TEST (test_tw_compare) {
+  tw_u512 a, b;
+  for (int i = 0; i < U512_TEST_VECTORS_512X512_LENGTH; i++) {
+    a = u512_test_vectors_512x512[i].a;
+    b = u512_test_vectors_512x512[i].b;
+    int compare = u512_test_vectors_512x512[i].a_comp_b;
+    ck_assert_msg(tw_compare(&a, &b) == compare, "Comparison check failed for vector %d", i);
   }
 }
 END_TEST
@@ -30,6 +41,7 @@ Suite * uint_suite(void) {
   tc_core = tcase_create("Equal test");
 
   tcase_add_test(tc_core, test_tw_equal);
+  tcase_add_test(tc_core, test_tw_compare);
   suite_add_tcase(s, tc_core);
 
   return s;

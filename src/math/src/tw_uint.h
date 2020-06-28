@@ -41,5 +41,9 @@ extern const tw_u512 TW_UINT256_MAX;
  */
 int tw_equal(const tw_u512* a, const tw_u512* b);
 
+/* Comparison
+ * returns -1 if (a < b), 1 if (a > b) and zero if equal
+ */
+int tw_compare(const tw_u512* a, const tw_u512* b);
 
 #endif
