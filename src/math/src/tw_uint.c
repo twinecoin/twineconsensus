@@ -46,10 +46,16 @@ int tw_compare(const tw_u512* a, const tw_u512* b) {
   return 0;
 }
 
-tw_u64 tw_prop_carry(tw_u64* y, tw_u64 a, tw_u64 carry) {
+tw_u64 tw_prop_carry_word(tw_u64* y, tw_u64 a, tw_u64 carry) {
   *y = a + carry;
   tw_u64 carry_out = a == TW_U64_MAX && carry;
   return carry_out != 0;
+}
+
+tw_u64 tw_prop_borrow_word(tw_u64* y, tw_u64 a, tw_u64 borrow) {
+  *y = a - borrow;
+  tw_u64 borrow_out = a == 0 && borrow;
+  return borrow_out != 0;
 }
 
 tw_u64 tw_add_word(tw_u64* y, tw_u64 a, tw_u64 b, tw_u64 carry) {
@@ -93,7 +99,7 @@ int tw_add_32_lshift(tw_u512* y, const tw_u512* a, const tw_u64 b, const tw_u32 
   }
   i++;
   for (;i < 8 && carry != 0; i++) {
-    carry = tw_prop_carry(&y->d[i], a->d[i], carry);
+    carry = tw_prop_carry_word(&y->d[i], a->d[i], carry);
   }
   for (;i < 8; i++) {
     y->d[i] = a->d[i];
@@ -105,6 +111,35 @@ int tw_sub(tw_u512* y, const tw_u512* a, const tw_u512* b) {
   tw_u64 borrow = 0;
   for (int i = 0; i < 8; i++) {
     borrow = tw_sub_word(&y->d[i], a->d[i], b->d[i], borrow);
+  }
+  return borrow != 0;
+}
+
+int tw_sub_32_lshift(tw_u512* y, const tw_u512* a, const tw_u64 b, const tw_u32 left_shift) {
+  int masked_shift = left_shift & 15;
+  tw_u64 borrow = 0;
+  int first = masked_shift >> 1;
+  int i;
+  for (i = 0; i < first; i++) {
+    y->d[i] = a->d[i];
+  }
+  if ((masked_shift & 1) == 0) {
+    borrow = tw_sub_word(&y->d[i], a->d[i], b, borrow);
+  } else {
+    borrow = tw_sub_word(&y->d[i], a->d[i], b << 32, borrow);
+    if (i < 7) {
+      i++;
+      borrow = tw_sub_word(&y->d[i], a->d[i], (b >> 32) & TW_U32_MAX, borrow);
+    } else {
+      borrow = borrow || (b >> 32) != 0;
+    }
+  }
+  i++;
+  for (;i < 8 && borrow != 0; i++) {
+    borrow = tw_prop_borrow_word(&y->d[i], a->d[i], borrow);
+  }
+  for (;i < 8; i++) {
+    y->d[i] = a->d[i];
   }
   return borrow != 0;
 }

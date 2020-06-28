@@ -75,4 +75,10 @@ int tw_add_32_lshift(tw_u512* y, const tw_u512* a, const tw_u64 b, const tw_u32 
  */
 int tw_sub(tw_u512* y, const tw_u512* a, const tw_u512* b);
 
+/* Subtraction by a u64 with 32-bit left shift
+ * y = a - (b << (32 * (left_shift & 15)))
+ * Returns 1 on borrow
+ */
+int tw_sub_32_lshift(tw_u512* y, const tw_u512* a, const tw_u64 b, const tw_u32 left_shift);
+
 #endif
