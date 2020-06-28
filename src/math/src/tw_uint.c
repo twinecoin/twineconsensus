@@ -46,25 +46,25 @@ int tw_compare(const tw_u512* a, const tw_u512* b) {
   return 0;
 }
 
-tw_u64 tw_prop_carry_word(tw_u64* y, tw_u64 a, tw_u64 carry) {
+tw_u64 tw_prop_carry_word(tw_u64* y, const tw_u64 a, const tw_u64 carry) {
   *y = a + carry;
   tw_u64 carry_out = a == TW_U64_MAX && carry;
   return carry_out != 0;
 }
 
-tw_u64 tw_prop_borrow_word(tw_u64* y, tw_u64 a, tw_u64 borrow) {
+tw_u64 tw_prop_borrow_word(tw_u64* y, const tw_u64 a, const tw_u64 borrow) {
   *y = a - borrow;
   tw_u64 borrow_out = a == 0 && borrow;
   return borrow_out != 0;
 }
 
-tw_u64 tw_add_word(tw_u64* y, tw_u64 a, tw_u64 b, tw_u64 carry) {
+tw_u64 tw_add_word(tw_u64* y, const tw_u64 a, const tw_u64 b, const tw_u64 carry) {
   *y = a + b + carry;
   tw_u64 carry_out = (b == TW_U64_MAX && carry) || (*y < a);
   return carry_out != 0;
 }
 
-tw_u64 tw_sub_word(tw_u64* y, tw_u64 a, tw_u64 b, tw_u64 borrow) {
+tw_u64 tw_sub_word(tw_u64* y, const tw_u64 a, const tw_u64 b, const tw_u64 borrow) {
   *y = a - b - borrow;
   tw_u64 borrow_out = (b == TW_U64_MAX && borrow) || (*y > a);
   return borrow_out != 0;
@@ -142,4 +142,56 @@ int tw_sub_32_lshift(tw_u512* y, const tw_u512* a, const tw_u64 b, const tw_u32 
     y->d[i] = a->d[i];
   }
   return borrow != 0;
+}
+
+void u512_to_u32_words(tw_u64* y, const tw_u512* a) {
+  int j = 0;
+  for (int i = 0; i < 8; i++) {
+    y[j++] = a->d[i] & TW_U32_MAX;
+    y[j++] = a->d[i] >> 32;
+  }
+}
+
+void u32_words_to_u512(tw_u512* y, const tw_u64* a) {
+  int j = 0;
+  for (int i = 0; i < 8; i++) {
+    y->d[i] = a[j++] & TW_U32_MAX;
+    y->d[i] |= a[j++] << 32;
+  }
+}
+
+int tw_mul(tw_u512* y, const tw_u512* a, const tw_u512* b) {
+  tw_u64 a32[16];
+  tw_u64 b32[16];
+  u512_to_u32_words(a32, a);
+  u512_to_u32_words(b32, b);
+
+  tw_u64 r[32];
+  for (int i = 0; i < 32; i++) {
+    r[i] = 0;
+  }
+
+  for (int i = 0; i < 16; i++) {
+    for (int j = 0; j < 16; j++) {
+      tw_u64 product = a32[i] * b32[j];
+      r[i + j] += product & TW_U32_MAX;
+      r[i + j + 1] += product >> 32;
+    }
+  }
+
+  tw_u64 carry = 0;
+  for (int i = 0; i < 32; i++) {
+    r[i] += carry;
+    carry = r[i] >> 32;
+    r[i] &= TW_U32_MAX;
+  }
+
+  u32_words_to_u512(y, r);
+
+  for (int i = 16; i < 32; i++) {
+    if (r[i] != 0) {
+      return 1;
+    }
+  }
+  return 0;
 }

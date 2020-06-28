@@ -107,6 +107,18 @@ START_TEST (test_tw_sub_32_lshift) {
 }
 END_TEST
 
+START_TEST (test_tw_mul) {
+  tw_u512 a, b, y;
+  for (int i = 0; i < U512_TEST_VECTORS_512X512_LENGTH; i++) {
+    a = u512_test_vectors_512x512[i].a;
+    b = u512_test_vectors_512x512[i].b;
+    int overflow = u512_test_vectors_512x512[i].a_mul_b_overflow;
+    ck_assert_msg(tw_mul(&y, &a, &b) == overflow, "Multiply overflow check failed for vector %d", i);
+    ck_assert_msg(tw_equal(&y, &u512_test_vectors_512x512[i].a_mul_b), "Multiplication mismatch for vector %d", i);
+  }
+}
+END_TEST
+
 Suite * uint_suite(void) {
   Suite *s;
   TCase *tc_core;
@@ -123,6 +135,7 @@ Suite * uint_suite(void) {
   tcase_add_test(tc_core, test_tw_add_32_lshift);
   tcase_add_test(tc_core, test_tw_sub);
   tcase_add_test(tc_core, test_tw_sub_32_lshift);
+  tcase_add_test(tc_core, test_tw_mul);
   suite_add_tcase(s, tc_core);
 
   return s;

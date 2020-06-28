@@ -56,7 +56,6 @@ int tw_equal(const tw_u512* a, const tw_u512* b);
  */
 int tw_compare(const tw_u512* a, const tw_u512* b);
 
-
 /* Addition with carry
  * y = a + b
  * Returns 1 on carry
@@ -80,5 +79,11 @@ int tw_sub(tw_u512* y, const tw_u512* a, const tw_u512* b);
  * Returns 1 on borrow
  */
 int tw_sub_32_lshift(tw_u512* y, const tw_u512* a, const tw_u64 b, const tw_u32 left_shift);
+
+/* Multiply with overflow
+ * y = a * b
+ * returns 1 on overflow
+ */
+int tw_mul(tw_u512* y, const tw_u512* a, const tw_u512* b);
 
 #endif
