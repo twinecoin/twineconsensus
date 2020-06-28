@@ -9,6 +9,28 @@
 #include "../src/math/src/tw_uint.h"
 #include "vectors/vectors_u512.h"
 
+START_TEST (test_tw_set) {
+  tw_u512 a, y;
+  tw_u512 expected = {0, 0, 0, 0, 0, 0, 0, 0};
+  tw_u64 b;
+  for (int i = 0; i < U512_TEST_VECTORS_512X64_LENGTH; i++) {
+    a = u512_test_vectors_512x64[i].a;
+    b = u512_test_vectors_512x64[i].b;
+    for (int j = 0; j < 8; j++) {
+      y.d[j] = a.d[j] == 0;
+    }
+    tw_set_512(&y, &a);
+    ck_assert_msg(tw_equal(&y, &a), "512-bit set check failed for vector %d", i);
+    for (int j = 0; j < 8; j++) {
+      y.d[j] = 1;
+    }
+    tw_set_64(&y, b);
+    expected.d[0] = b;
+    ck_assert_msg(tw_equal(&y, &expected), "64-bit set check failed for vector %d", i);
+  }
+}
+END_TEST
+
 START_TEST (test_tw_equal) {
   tw_u512 a, b;
   for (int i = 0; i < U512_TEST_VECTORS_512X512_LENGTH; i++) {
@@ -52,6 +74,7 @@ Suite * uint_suite(void) {
   /* Core test case */
   tc_core = tcase_create("Equal test");
 
+  tcase_add_test(tc_core, test_tw_set);
   tcase_add_test(tc_core, test_tw_equal);
   tcase_add_test(tc_core, test_tw_compare);
   tcase_add_test(tc_core, test_tw_add);

@@ -12,6 +12,19 @@ const tw_u512 TW_UINT_MAX    = {TW_U64_MAX, TW_U64_MAX, TW_U64_MAX, TW_U64_MAX,
 const tw_u512 TW_UINT256_MAX = {0,          0,          0,          0,
                                 TW_U64_MAX, TW_U64_MAX, TW_U64_MAX, TW_U64_MAX};
 
+void tw_set_512(tw_u512* y, const tw_u512* a) {
+  for (int i = 0; i < 8; i++) {
+    y->d[i] = a->d[i];
+  }
+}
+
+void tw_set_64(tw_u512* y, const tw_u64 a) {
+  y->d[0] = a;
+  for (int i = 1; i < 8; i++) {
+    y->d[i] = 0;
+  }
+}
+
 int tw_equal(const tw_u512* a, const tw_u512* b) {
   for (int i = 0; i < 8; i++) {
     if (a->d[i] != b->d[i]) {
