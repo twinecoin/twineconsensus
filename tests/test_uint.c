@@ -119,6 +119,21 @@ START_TEST (test_tw_mul) {
 }
 END_TEST
 
+START_TEST (test_tw_mul_32_lshift) {
+  tw_u512 a, y;
+  tw_u64 b;
+  tw_u32 shift;
+  for (int i = 0; i < U512_TEST_VECTORS_512X64_LENGTH; i++) {
+    a = u512_test_vectors_512x64[i].a;
+    b = u512_test_vectors_512x64[i].b;
+    shift = u512_test_vectors_512x64[i].s;
+    int overflow = u512_test_vectors_512x64[i].a_mul_b_overflow;
+    ck_assert_msg(tw_mul_32_lshift(&y, &a, b, shift) == overflow, "Multiplication with left shift overflow check failed for vector %d", i);
+    ck_assert_msg(tw_equal(&y, &u512_test_vectors_512x64[i].a_mul_b), "Multiplication with left shift mismatch for vector %d", i);
+  }
+}
+END_TEST
+
 Suite * uint_suite(void) {
   Suite *s;
   TCase *tc_core;
@@ -136,6 +151,7 @@ Suite * uint_suite(void) {
   tcase_add_test(tc_core, test_tw_sub);
   tcase_add_test(tc_core, test_tw_sub_32_lshift);
   tcase_add_test(tc_core, test_tw_mul);
+  tcase_add_test(tc_core, test_tw_mul_32_lshift);
   suite_add_tcase(s, tc_core);
 
   return s;

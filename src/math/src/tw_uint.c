@@ -160,22 +160,17 @@ void u32_words_to_u512(tw_u512* y, const tw_u64* a) {
   }
 }
 
-int tw_mul(tw_u512* y, const tw_u512* a, const tw_u512* b) {
-  tw_u64 a32[16];
-  tw_u64 b32[16];
-  u512_to_u32_words(a32, a);
-  u512_to_u32_words(b32, b);
-
+int tw_mul_internal(tw_u512* y, tw_u64* a32, tw_u64* b32, int b_len, int b_offset) {
   tw_u64 r[32];
   for (int i = 0; i < 32; i++) {
     r[i] = 0;
   }
 
   for (int i = 0; i < 16; i++) {
-    for (int j = 0; j < 16; j++) {
+    for (int j = 0; j < b_len; j++) {
       tw_u64 product = a32[i] * b32[j];
-      r[i + j] += product & TW_U32_MAX;
-      r[i + j + 1] += product >> 32;
+      r[i + j + b_offset] += product & TW_U32_MAX;
+      r[i + j + 1 + b_offset] += product >> 32;
     }
   }
 
@@ -194,4 +189,26 @@ int tw_mul(tw_u512* y, const tw_u512* a, const tw_u512* b) {
     }
   }
   return 0;
+}
+
+int tw_mul(tw_u512* y, const tw_u512* a, const tw_u512* b) {
+  tw_u64 a32[16];
+  tw_u64 b32[16];
+  u512_to_u32_words(a32, a);
+  u512_to_u32_words(b32, b);
+
+  return tw_mul_internal(y, a32, b32, 16, 0) != 0;
+}
+
+int tw_mul_32_lshift(tw_u512* y, const tw_u512* a, const tw_u64 b, const tw_u32 left_shift) {
+  tw_u64 a32[16];
+  tw_u64 b32[2];
+
+  u512_to_u32_words(a32, a);
+  b32[0] = b & TW_U32_MAX;
+  b32[1] = b >> 32;
+
+  int masked_shift = left_shift & 15;
+
+  return tw_mul_internal(y, a32, b32, 2, masked_shift) != 0;
 }

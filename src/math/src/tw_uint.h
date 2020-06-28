@@ -86,4 +86,10 @@ int tw_sub_32_lshift(tw_u512* y, const tw_u512* a, const tw_u64 b, const tw_u32 
  */
 int tw_mul(tw_u512* y, const tw_u512* a, const tw_u512* b);
 
+/* Multiplication by a u64 with 32-bit left shift
+ * y = a * (b << (32 * (left_shift & 15)))
+ * Returns 1 on carry
+ */
+int tw_mul_32_lshift(tw_u512* y, const tw_u512* a, const tw_u64 b, const tw_u32 left_shift);
+
 #endif
