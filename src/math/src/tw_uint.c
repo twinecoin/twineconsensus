@@ -32,3 +32,12 @@ int tw_compare(const tw_u512* a, const tw_u512* b) {
   }
   return 0;
 }
+
+int tw_add(tw_u512* y, const tw_u512* a, const tw_u512* b) {
+  tw_u64 carry = 0;
+  for (int i = 0; i < 8; i++) {
+    y->d[i] = a->d[i] + b->d[i] + carry;
+    carry = (b->d[i] == TW_U64_MAX && carry) || (y->d[i] < a->d[i]);
+  }
+  return carry != 0;
+}

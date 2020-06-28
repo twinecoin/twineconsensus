@@ -46,4 +46,11 @@ int tw_equal(const tw_u512* a, const tw_u512* b);
  */
 int tw_compare(const tw_u512* a, const tw_u512* b);
 
+
+/* Addition with carry
+ * y = a + b
+ * Returns 1 on carry
+ */
+int tw_add(tw_u512* y, const tw_u512* a, const tw_u512* b);
+
 #endif

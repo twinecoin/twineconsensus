@@ -31,6 +31,18 @@ START_TEST (test_tw_compare) {
 }
 END_TEST
 
+START_TEST (test_tw_add) {
+  tw_u512 a, b, y;
+  for (int i = 0; i < U512_TEST_VECTORS_512X512_LENGTH; i++) {
+    a = u512_test_vectors_512x512[i].a;
+    b = u512_test_vectors_512x512[i].b;
+    int carry = u512_test_vectors_512x512[i].a_add_b_carry;
+    ck_assert_msg(tw_add(&y, &a, &b) == carry, "Addition carry check failed for vector %d", i);
+    ck_assert_msg(tw_equal(&y, &u512_test_vectors_512x512[i].a_add_b), "Addition mismatch for vector %d", i);
+  }
+}
+END_TEST
+
 Suite * uint_suite(void) {
   Suite *s;
   TCase *tc_core;
@@ -42,6 +54,7 @@ Suite * uint_suite(void) {
 
   tcase_add_test(tc_core, test_tw_equal);
   tcase_add_test(tc_core, test_tw_compare);
+  tcase_add_test(tc_core, test_tw_add);
   suite_add_tcase(s, tc_core);
 
   return s;

@@ -1,4 +1,4 @@
-AM_CFLAGS                    = -I$(top_srcdir)/include -fvisibility=hidden -std=c99 -pedantic
+AM_CFLAGS                    = -I$(top_srcdir)/include -fvisibility=hidden -std=c99 -pedantic -funroll-loops
 
 CLEANFILES                   = tw_lic_check
 
