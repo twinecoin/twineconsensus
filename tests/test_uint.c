@@ -134,6 +134,21 @@ START_TEST (test_tw_mul_32_lshift) {
 }
 END_TEST
 
+START_TEST (test_u512_to_u64_float) {
+  tw_u512 a, y;
+  tw_i32 b_exp;
+  for (int i = 0; i < U512_TEST_VECTORS_512X64_LENGTH; i++) {
+    a = u512_test_vectors_512x64[i].a;
+    b_exp = u512_test_vectors_512x64[i].s;
+    tw_u64_float a_float = u512_to_u64_float(&a, b_exp);
+    tw_u64_float a_float_exp = u512_test_vectors_512x64[i].exp_float;
+    ck_assert_msg(a_float.man == a_float_exp.man, "U64 float conversion mantissa check failed for vector %d", i);
+    ck_assert_msg(a_float.w_exp == a_float_exp.w_exp, "U64 float conversion word exponent check failed for vector %d", i);
+    ck_assert_msg(a_float.b_exp == a_float_exp.b_exp, "U64 float conversion bit exponent check failed for vector %d", i);
+  }
+}
+END_TEST
+
 Suite * uint_suite(void) {
   Suite *s;
   TCase *tc_core;
@@ -152,6 +167,7 @@ Suite * uint_suite(void) {
   tcase_add_test(tc_core, test_tw_sub_32_lshift);
   tcase_add_test(tc_core, test_tw_mul);
   tcase_add_test(tc_core, test_tw_mul_32_lshift);
+  tcase_add_test(tc_core, test_u512_to_u64_float);
   suite_add_tcase(s, tc_core);
 
   return s;

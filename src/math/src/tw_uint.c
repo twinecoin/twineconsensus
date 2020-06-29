@@ -6,10 +6,8 @@
 #include "tw_uint.h"
 
 const tw_u512 TW_ZERO        = {0, 0, 0, 0, 0, 0, 0, 0};
-const tw_u512 TW_ONE         = {1, 0, 0, 0, 0, 0, 0, 0};
-const tw_u512 TW_UINT_MAX    = {TW_U64_MAX, TW_U64_MAX, TW_U64_MAX, TW_U64_MAX,
-                                TW_U64_MAX, TW_U64_MAX, TW_U64_MAX, TW_U64_MAX};
-const tw_u512 TW_UINT256_MAX = {0,          0,          0,          0,
+const tw_u512 TW_U512_ONE    = {1, 0, 0, 0, 0, 0, 0, 0};
+const tw_u512 TW_U512_MAX    = {TW_U64_MAX, TW_U64_MAX, TW_U64_MAX, TW_U64_MAX,
                                 TW_U64_MAX, TW_U64_MAX, TW_U64_MAX, TW_U64_MAX};
 
 void tw_set_512(tw_u512* y, const tw_u512* a) {
@@ -211,4 +209,67 @@ int tw_mul_32_lshift(tw_u512* y, const tw_u512* a, const tw_u64 b, const tw_u32 
   int masked_shift = left_shift & 15;
 
   return tw_mul_internal(y, a32, b32, 2, masked_shift) != 0;
+}
+
+int msb_position(tw_u64 a) {
+  int msb_pos = 0;
+  for (int bit_width = 32; bit_width > 0; bit_width >>= 1) {
+    tw_u64 threshold = ((tw_u64) 1) << bit_width;
+    if (a >= threshold) {
+      msb_pos += bit_width;
+      a >>= bit_width;
+    }
+  }
+  return msb_pos;
+}
+
+tw_u64_float u512_to_u64_float(const tw_u512* a, tw_i32 b_exp) {
+  tw_u64_float a_float;
+  // If a is zero, then the for loop will not modify a_float
+  a_float.man = 0;
+  a_float.w_exp = 0;
+  a_float.b_exp = 0;
+  for (int i = 7; i >= 0; i--) {
+    tw_u64 msw = a->d[i];
+    if (msw == 0) {
+      continue;
+    }
+    tw_u64 smsw = i == 0 ? 0 : a->d[i-1];
+    int msb_pos = msb_position(msw);
+
+    tw_u32 b_exp_auto;
+    if (b_exp < 0) {
+      b_exp_auto = (msb_pos + 1) & 0x1F;
+    } else {
+      b_exp_auto = b_exp & 0x1F;
+    }
+
+    int left_shift = (32 - b_exp_auto) & 31;
+    if (msb_pos + left_shift < 64) {
+      if (msb_pos + left_shift < 32) {
+        left_shift += 32;
+      }
+      a_float.man = msw << left_shift;
+      if (left_shift != 0) {
+        a_float.man |= smsw >> (64 - left_shift);
+      }
+    } else {
+      left_shift -= 32;
+      assert(left_shift < 0);
+      a_float.man = msw >> (-left_shift);
+    }
+    a_float.b_exp = b_exp_auto;
+    // Total exponential is (i * 2 * 32) - left_shift = 32 * w_exp + b_exp
+    // 32 * w_exp = 32 * (i * 2) - (left_shift + b_exp)
+    // w_exp = (i * 2) - (left_shift + b_exp) / 32
+    // (left_shift + b_exp) is evenly divisible by 32
+    // (left_shift + b_exp) = (k * 32 + (32 - b_exp)) + b_exp
+    //                      = 32 * (k + 1) - b_exp + b_exp
+    //                      = 32 * (k + 1)
+    tw_i32 offset = left_shift + b_exp_auto;
+    assert((offset & 31) == 0);
+    a_float.w_exp = (i * 2) - (offset >> 5);
+    return a_float;
+  }
+  return a_float;
 }
