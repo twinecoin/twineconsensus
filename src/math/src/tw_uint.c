@@ -218,13 +218,14 @@ int tw_mul_32_lshift(tw_u512* y, const tw_u512* a, const tw_u64 b, const tw_u32 
   return tw_mul_internal(y, a32, b32, 2, masked_shift) != 0;
 }
 
-int msb_position(tw_u64 a) {
+int msb_position(const tw_u64 a) {
+  tw_u64 remainder = a;
   int msb_pos = 0;
   for (int bit_width = 32; bit_width > 0; bit_width >>= 1) {
     tw_u64 threshold = ((tw_u64) 1) << bit_width;
-    if (a >= threshold) {
+    if (remainder >= threshold) {
       msb_pos += bit_width;
-      a >>= bit_width;
+      remainder >>= bit_width;
     }
   }
   return msb_pos;

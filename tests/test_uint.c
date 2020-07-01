@@ -134,6 +134,18 @@ START_TEST (test_tw_mul_32_lshift) {
 }
 END_TEST
 
+START_TEST (test_msb_position) {
+  tw_u512 a, y;
+  tw_i32 b_exp;
+  for (int i = 0; i < U512_TEST_VECTORS_512X64_LENGTH; i++) {
+    tw_u64 b = u512_test_vectors_512x64[i].b;
+    int msb_pos = msb_position(b);
+    int exp_msb_pos = u512_test_vectors_512x64[i].msb_pos;
+    ck_assert_msg(msb_pos == exp_msb_pos, "MSB position check failed for vector %d", i);
+  }
+}
+END_TEST
+
 START_TEST (test_u512_to_u64_float) {
   tw_u512 a, y;
   tw_i32 b_exp;
@@ -167,6 +179,7 @@ Suite * uint_suite(void) {
   tcase_add_test(tc_core, test_tw_sub_32_lshift);
   tcase_add_test(tc_core, test_tw_mul);
   tcase_add_test(tc_core, test_tw_mul_32_lshift);
+  tcase_add_test(tc_core, test_msb_position);
   tcase_add_test(tc_core, test_u512_to_u64_float);
   suite_add_tcase(s, tc_core);
 

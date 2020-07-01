@@ -107,6 +107,12 @@ int tw_mul(tw_u512* y, const tw_u512* a, const tw_u512* b);
  */
 int tw_mul_32_lshift(tw_u512* y, const tw_u512* a, const tw_u64 b, const tw_u32 left_shift);
 
+/* Gets the position of the MSB for a tw_u64
+ * The LSB is bit zero and the MSB is bit 63
+ * Returns 0 for 0
+ */
+int msb_position(const tw_u64 a);
+
 /* Converts a tw_u512 into a tw_u64_float
  * All rounding is downwards.
  * If b_exp is negative then it is selected automatically so that the
