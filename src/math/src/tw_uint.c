@@ -158,22 +158,25 @@ void u32_words_to_u512(tw_u512* y, const tw_u64* a) {
   }
 }
 
-int tw_mul_internal(tw_u512* y, tw_u64* a32, tw_u64* b32, int b_len, int b_offset) {
-  tw_u64 r[32];
-  for (int i = 0; i < 32; i++) {
+int tw_mul_internal(tw_u512* y, const tw_u64* a32, const tw_u64* b32, const int b_len, const int b_offset) {
+  int b_offset_masked = b_offset & 15;
+  tw_u64 r[33];
+  for (int i = 0; i < 33; i++) {
     r[i] = 0;
   }
 
   for (int i = 0; i < 16; i++) {
     for (int j = 0; j < b_len; j++) {
+      assert(i + j + 1 + b_offset_masked < 33);
+      assert(i + j + b_offset_masked >= 0);
       tw_u64 product = a32[i] * b32[j];
-      r[i + j + b_offset] += product & TW_U32_MAX;
-      r[i + j + 1 + b_offset] += product >> 32;
+      r[i + j + b_offset_masked] += product & TW_U32_MAX;
+      r[i + j + 1 + b_offset_masked] += product >> 32;
     }
   }
 
   tw_u64 carry = 0;
-  for (int i = 0; i < 32; i++) {
+  for (int i = 0; i < 33; i++) {
     r[i] += carry;
     carry = r[i] >> 32;
     r[i] &= TW_U32_MAX;
@@ -181,7 +184,11 @@ int tw_mul_internal(tw_u512* y, tw_u64* a32, tw_u64* b32, int b_len, int b_offse
 
   u32_words_to_u512(y, r);
 
-  for (int i = 16; i < 32; i++) {
+  if (carry) {
+    return 1;
+  }
+
+  for (int i = 16; i < 33; i++) {
     if (r[i] != 0) {
       return 1;
     }
