@@ -39,16 +39,6 @@ extern const tw_u512 TW_U512_MAX;
 #define TW_U64_SET_B63 (0x8000000000000000LLU)
 #define TW_U32_MAX     (0xFFFFFFFFLU)
 
-/* Set to a tw_u512
- * y = a
- */
-void tw_set_512(tw_u512* y, const tw_u512* a);
-
-/* Set to a tw_u64
- * y = (tw_u512) a
- */
-void tw_set_64(tw_u512* y, const tw_u64 a);
-
 /* Equality check
  * Returns 1 if equal
  */

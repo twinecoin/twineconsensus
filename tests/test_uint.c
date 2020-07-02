@@ -9,82 +9,205 @@
 #include "../src/math/src/tw_uint.h"
 #include "vectors/vectors_u512.h"
 
-START_TEST (test_tw_set) {
-  tw_u512 a, y;
-  tw_u512 expected = {0, 0, 0, 0, 0, 0, 0, 0};
-  tw_u64 b;
-  for (int i = 0; i < U512_TEST_VECTORS_512X64_LENGTH; i++) {
-    a = u512_test_vectors_512x64[i].a;
-    b = u512_test_vectors_512x64[i].b;
-    for (int j = 0; j < 8; j++) {
-      y.d[j] = a.d[j] == 0;
-    }
-    tw_set_512(&y, &a);
-    ck_assert_msg(tw_equal(&y, &a), "512-bit set check failed for vector %d", i);
-    for (int j = 0; j < 8; j++) {
-      y.d[j] = 1;
-    }
-    tw_set_64(&y, b);
-    expected.d[0] = b;
-    ck_assert_msg(tw_equal(&y, &expected), "64-bit set check failed for vector %d", i);
-  }
-}
-END_TEST
-
 START_TEST (test_tw_equal) {
   tw_u512 a, b;
   for (int i = 0; i < U512_TEST_VECTORS_512X512_LENGTH; i++) {
-    a = u512_test_vectors_512x512[i].a;
-    b = u512_test_vectors_512x512[i].b;
+    tw_u512 a = u512_test_vectors_512x512[i].a;
+    tw_u512 b = u512_test_vectors_512x512[i].b;
     int equal = u512_test_vectors_512x512[i].a_equal_b;
+    const tw_u512 a_old = a;
+    const tw_u512 b_old = b;
+
     ck_assert_msg(tw_equal(&a, &b) == equal, "Equality check failed for vector %d", i);
+    ck_assert_msg(tw_equal(&a_old, &a), "A altered for equality check for vector %d", i);
+    ck_assert_msg(tw_equal(&b_old, &b), "B altered for equality check for vector %d", i);
+
+    ck_assert_msg(tw_equal(&a, &a) != 0, "Self-equality check failed for vector %d", i);
+    ck_assert_msg(tw_equal(&a_old, &a), "A altered for self-equality check for vector %d", i);
   }
 }
 END_TEST
 
 START_TEST (test_tw_compare) {
-  tw_u512 a, b;
   for (int i = 0; i < U512_TEST_VECTORS_512X512_LENGTH; i++) {
-    a = u512_test_vectors_512x512[i].a;
-    b = u512_test_vectors_512x512[i].b;
+    tw_u512 a = u512_test_vectors_512x512[i].a;
+    tw_u512 b = u512_test_vectors_512x512[i].b;
     int compare = u512_test_vectors_512x512[i].a_comp_b;
+    const tw_u512 a_old = a;
+    const tw_u512 b_old = b;
+
     ck_assert_msg(tw_compare(&a, &b) == compare, "Comparison check failed for vector %d", i);
+    ck_assert_msg(tw_equal(&a_old, &a), "A altered for comparison check for vector %d", i);
+    ck_assert_msg(tw_equal(&b_old, &b), "B altered for comparison check for vector %d", i);
+
+    ck_assert_msg(tw_compare(&a, &a) == 0, "Self-comparison check failed for vector %d", i);
+    ck_assert_msg(tw_equal(&a_old, &a), "A altered for self-comparison check for vector %d", i);
   }
 }
 END_TEST
 
 START_TEST (test_tw_add) {
-  tw_u512 a, b, y;
   for (int i = 0; i < U512_TEST_VECTORS_512X512_LENGTH; i++) {
-    a = u512_test_vectors_512x512[i].a;
-    b = u512_test_vectors_512x512[i].b;
-    int carry = u512_test_vectors_512x512[i].a_add_b_carry;
-    ck_assert_msg(tw_add(&y, &a, &b) == carry, "Addition carry check failed for vector %d", i);
-    ck_assert_msg(tw_equal(&y, &u512_test_vectors_512x512[i].a_add_b), "Addition mismatch for vector %d", i);
+    for (int j = 0; j < 5; j++) {
+      int carry = u512_test_vectors_512x512[i].a_add_b_carry;
+      const tw_u512 expected = u512_test_vectors_512x512[i].a_add_b;
+      tw_u512 y = {0};
+      tw_u512* y_ptr = &y;
+      tw_u512 a = u512_test_vectors_512x512[i].a;
+      tw_u512 b = u512_test_vectors_512x512[i].b;
+      const tw_u512 a_old = a;
+      const tw_u512 b_old = b;
+
+      int carry_out;
+      char* name;
+      if (j == 0) {
+        name = "y = a + b";
+        y_ptr = &y;
+        carry_out = tw_add(&y, &a, &b);
+      } else if (j == 1) {
+        y_ptr = &a;
+        carry_out = tw_add(&a, &a, &b);
+        name = "a = a + b";
+      } else if (j == 2) {
+        y_ptr = &b;
+        name = "b = a + b";
+        carry_out = tw_add(&b, &a, &b);
+      } else if (j == 3) {
+        if (!tw_equal(&a, &b)) {
+          continue;
+        }
+        y_ptr = &y;
+        name = "y = a + a";
+        carry_out = tw_add(&y, &a, &a);
+      } else if (j == 4) {
+        if (!tw_equal(&a, &b)) {
+          continue;
+        }
+        y_ptr = &a;
+        name = "a = a + a";
+        carry_out = tw_add(&a, &a, &a);
+      }
+
+      ck_assert_msg(carry_out == carry, "Carry check failed for %s check for vector %d", name, i);
+      ck_assert_msg(tw_equal(y_ptr, &expected), "Addition mismatch for %s check for vector %d", name, i);
+      if (j != 1 && j != 4) {
+        ck_assert_msg(tw_equal(&a_old, &a), "A altered for %s check for vector %d", name, i);
+      }
+      if (j != 2) {
+        ck_assert_msg(tw_equal(&b_old, &b), "B altered for %s check for vector %d", name, i);
+      }
+    }
   }
 }
 END_TEST
 
 START_TEST (test_tw_sub) {
-  tw_u512 a, b, y;
   for (int i = 0; i < U512_TEST_VECTORS_512X512_LENGTH; i++) {
-    a = u512_test_vectors_512x512[i].a;
-    b = u512_test_vectors_512x512[i].b;
-    int borrow = u512_test_vectors_512x512[i].a_sub_b_borrow;
-    ck_assert_msg(tw_sub(&y, &a, &b) == borrow, "Subtraction carry check failed for vector %d", i);
-    ck_assert_msg(tw_equal(&y, &u512_test_vectors_512x512[i].a_sub_b), "Subtraction mismatch for vector %d", i);
+    for (int j = 0; j < 5; j++) {
+      int borrow = u512_test_vectors_512x512[i].a_sub_b_borrow;
+      const tw_u512 expected = u512_test_vectors_512x512[i].a_sub_b;
+      tw_u512 y = {0};
+      tw_u512* y_ptr = &y;
+      tw_u512 a = u512_test_vectors_512x512[i].a;
+      tw_u512 b = u512_test_vectors_512x512[i].b;
+      const tw_u512 a_old = a;
+      const tw_u512 b_old = b;
+
+      int borrow_out;
+      char* name;
+      if (j == 0) {
+        name = "y = a - b";
+        y_ptr = &y;
+        borrow_out = tw_sub(&y, &a, &b);
+      } else if (j == 1) {
+        y_ptr = &a;
+        borrow_out = tw_sub(&a, &a, &b);
+        name = "a = a - b";
+      } else if (j == 2) {
+        y_ptr = &b;
+        name = "b = a - b";
+        borrow_out = tw_sub(&b, &a, &b);
+      } else if (j == 3) {
+        if (!tw_equal(&a, &b)) {
+          continue;
+        }
+        y_ptr = &y;
+        name = "y = a - a";
+        borrow_out = tw_sub(&y, &a, &a);
+      } else if (j == 4) {
+        if (!tw_equal(&a, &b)) {
+          continue;
+        }
+        y_ptr = &a;
+        name = "a = a - a";
+        borrow_out = tw_sub(&a, &a, &a);
+      }
+
+      ck_assert_msg(borrow_out == borrow, "Borrow check failed for %s check for vector %d", name, i);
+      ck_assert_msg(tw_equal(y_ptr, &expected), "Subtraction mismatch for %s check for vector %d", name, i);
+      if (j != 1 && j != 4) {
+        ck_assert_msg(tw_equal(&a_old, &a), "A altered for %s check for vector %d", name, i);
+      }
+      if (j != 2) {
+        ck_assert_msg(tw_equal(&b_old, &b), "B altered for %s check for vector %d", name, i);
+      }
+    }
   }
 }
+
 END_TEST
 
 START_TEST (test_tw_mul) {
-  tw_u512 a, b, y;
   for (int i = 0; i < U512_TEST_VECTORS_512X512_LENGTH; i++) {
-    a = u512_test_vectors_512x512[i].a;
-    b = u512_test_vectors_512x512[i].b;
-    int overflow = u512_test_vectors_512x512[i].a_mul_b_overflow;
-    ck_assert_msg(tw_mul(&y, &a, &b) == overflow, "Multiply overflow check failed for vector %d", i);
-    ck_assert_msg(tw_equal(&y, &u512_test_vectors_512x512[i].a_mul_b), "Multiplication mismatch for vector %d", i);
+    for (int j = 0; j < 5; j++) {
+      int overflow = u512_test_vectors_512x512[i].a_mul_b_overflow;
+      const tw_u512 expected = u512_test_vectors_512x512[i].a_mul_b;
+      tw_u512 y = {0};
+      tw_u512* y_ptr = &y;
+      tw_u512 a = u512_test_vectors_512x512[i].a;
+      tw_u512 b = u512_test_vectors_512x512[i].b;
+      const tw_u512 a_old = a;
+      const tw_u512 b_old = b;
+
+      int overflow_out;
+      char* name;
+      if (j == 0) {
+        name = "y = a * b";
+        y_ptr = &y;
+        overflow_out = tw_mul(&y, &a, &b);
+      } else if (j == 1) {
+        y_ptr = &a;
+        overflow_out = tw_mul(&a, &a, &b);
+        name = "a = a * b";
+      } else if (j == 2) {
+        y_ptr = &b;
+        name = "b = a * b";
+        overflow_out = tw_mul(&b, &a, &b);
+      } else if (j == 3) {
+        if (!tw_equal(&a, &b)) {
+          continue;
+        }
+        y_ptr = &y;
+        name = "y = a * a";
+        overflow_out = tw_mul(&y, &a, &a);
+      } else if (j == 4) {
+        if (!tw_equal(&a, &b)) {
+          continue;
+        }
+        y_ptr = &a;
+        name = "a = a * a";
+        overflow_out = tw_mul(&a, &a, &a);
+      }
+
+      ck_assert_msg(overflow_out == overflow, "Overflow check failed for %s check for vector %d", name, i);
+      ck_assert_msg(tw_equal(y_ptr, &expected), "Multiply mismatch for %s check for vector %d", name, i);
+      if (j != 1 && j != 4) {
+        ck_assert_msg(tw_equal(&a_old, &a), "A altered for %s check for vector %d", name, i);
+      }
+      if (j != 2) {
+        ck_assert_msg(tw_equal(&b_old, &b), "B altered for %s check for vector %d", name, i);
+      }
+    }
   }
 }
 END_TEST
@@ -115,7 +238,6 @@ Suite * uint_suite(void) {
   /* Core test case */
   tc_core = tcase_create("Equal test");
 
-  tcase_add_test(tc_core, test_tw_set);
   tcase_add_test(tc_core, test_tw_equal);
   tcase_add_test(tc_core, test_tw_compare);
   tcase_add_test(tc_core, test_tw_add);
