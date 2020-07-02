@@ -9,6 +9,17 @@
 #include "../src/math/src/tw_uint.h"
 #include "vectors/vectors_u512.h"
 
+// Test if two u512 integers are equal.
+// Eliminates loop where tw_equal was used to verify itself
+int test_u512_equal(tw_u512 a, tw_u512 b) {
+  for (int i = 0; i < 8; i++) {
+    if (a.d[i] != b.d[i]) {
+      return 0;
+    }
+  }
+  return 1;
+}
+
 START_TEST (test_tw_equal) {
   tw_u512 a, b;
   for (int i = 0; i < U512_TEST_VECTORS_512X512_LENGTH; i++) {
@@ -19,11 +30,11 @@ START_TEST (test_tw_equal) {
     const tw_u512 b_old = b;
 
     ck_assert_msg(tw_equal(&a, &b) == equal, "Equality check failed for vector %d", i);
-    ck_assert_msg(tw_equal(&a_old, &a), "A altered for equality check for vector %d", i);
-    ck_assert_msg(tw_equal(&b_old, &b), "B altered for equality check for vector %d", i);
+    ck_assert_msg(test_u512_equal(a_old, a), "A altered for equality check for vector %d", i);
+    ck_assert_msg(test_u512_equal(b_old, b), "B altered for equality check for vector %d", i);
 
     ck_assert_msg(tw_equal(&a, &a) != 0, "Self-equality check failed for vector %d", i);
-    ck_assert_msg(tw_equal(&a_old, &a), "A altered for self-equality check for vector %d", i);
+    ck_assert_msg(test_u512_equal(a_old, a), "A altered for self-equality check for vector %d", i);
   }
 }
 END_TEST
