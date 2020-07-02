@@ -281,3 +281,64 @@ tw_u64_float u512_to_u64_float(const tw_u512* a, tw_i32 b_exp) {
   }
   return a_float;
 }
+
+int tw_div_rem(tw_u512* y, tw_u512* z, const tw_u512* a, const tw_u512* b) {
+  // Check divide by zero
+  if (tw_equal(b, &TW_ZERO)) {
+    return 1;
+  }
+
+  // Initialize the remainder and quotient
+  tw_u512 rem, quot;
+  tw_set_512(&rem, a);
+  tw_set_512(&quot, &TW_ZERO);
+
+  tw_u64_float b_float = u512_to_u64_float(b, -1);
+  // Shift the MSB of b_float to bit 31 instead of bit 63
+  b_float.w_exp++;
+  b_float.man >>= 32;
+
+  while (tw_compare(&rem, b) >= 0) {
+    // Convert rem into a float with the mantissa aligned with b_float
+    tw_u64_float rem_float = u512_to_u64_float(&rem, b_float.b_exp);
+    assert(rem_float.man > TW_U32_MAX);
+
+    tw_u64_float estimate_float;
+    estimate_float.man = rem_float.man / b_float.man;
+    estimate_float.w_exp = rem_float.w_exp - b_float.w_exp;
+    estimate_float.b_exp = 0;
+    assert(rem_float.b_exp == b_float.b_exp);
+
+    if (estimate_float.man > TW_U32_MAX) {
+      estimate_float.man = TW_U32_MAX;
+    }
+
+    if (estimate_float.w_exp < 0) {
+      assert(estimate_float.w_exp == -1);
+      estimate_float.man >>= 32;
+      estimate_float.w_exp++;
+    }
+
+    // The ideal quotient is in the range [estimate_float.man - 2, estimate_float.man]
+    tw_u64 low_estimate_man = estimate_float.man > 2 ? (estimate_float.man - 2) : 1;
+
+    for (int i = 0; i < 3; i++) {
+      estimate_float.man = i == 0 ? low_estimate_man : 1;
+      tw_u512 prod;
+      int overflow = tw_mul_32_lshift(&prod, b, estimate_float.man, estimate_float.w_exp);
+      assert(overflow == 0);
+      tw_u512 sub;
+      int borrow = tw_sub(&sub, &rem, &prod);
+      if (borrow) {
+        assert(i != 0);
+        break;
+      }
+      tw_set_512(&rem, &sub);
+      int carry = tw_add_32_lshift(&quot, &quot, estimate_float.man, estimate_float.w_exp);
+      assert(carry == 0);
+    }
+  }
+  tw_set_512(z, &rem);
+  tw_set_512(y, &quot);
+  return 0;
+}

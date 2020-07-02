@@ -161,6 +161,22 @@ START_TEST (test_u512_to_u64_float) {
 }
 END_TEST
 
+START_TEST (test_tw_div_rem) {
+  tw_u512 a, b, y, z;
+  for (int i = 0; i < U512_TEST_VECTORS_512X512_LENGTH; i++) {
+    printf("Running vector: %d\n", i);
+    a = u512_test_vectors_512x512[i].a;
+    b = u512_test_vectors_512x512[i].b;
+    int div_by_0 = u512_test_vectors_512x512[i].div_by_0;
+    ck_assert_msg(tw_div_rem(&y, &z, &a, &b) == div_by_0, "Divide by zero check failed for vector %d", i);
+    if (!div_by_0) {
+      ck_assert_msg(tw_equal(&y, &u512_test_vectors_512x512[i].a_div_b), "Division mismatch for vector %d", i);
+      ck_assert_msg(tw_equal(&z, &u512_test_vectors_512x512[i].a_rem_b), "Remainder mismatch for vector %d", i);
+    }
+  }
+}
+END_TEST
+
 Suite * uint_suite(void) {
   Suite *s;
   TCase *tc_core;
@@ -181,6 +197,7 @@ Suite * uint_suite(void) {
   tcase_add_test(tc_core, test_tw_mul_32_lshift);
   tcase_add_test(tc_core, test_msb_position);
   tcase_add_test(tc_core, test_u512_to_u64_float);
+  tcase_add_test(tc_core, test_tw_div_rem);
   suite_add_tcase(s, tc_core);
 
   return s;

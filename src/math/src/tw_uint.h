@@ -123,4 +123,11 @@ int msb_position(const tw_u64 a);
  */
 tw_u64_float u512_to_u64_float(const tw_u512* a, tw_i32 b_exp);
 
+/* Divide and remainder with zero check
+ * y = a / b
+ * z = a % b
+ * returns 1 for divide by zero
+ */
+int tw_div_rem(tw_u512* y, tw_u512* z, const tw_u512* a, const tw_u512* b);
+
 #endif
