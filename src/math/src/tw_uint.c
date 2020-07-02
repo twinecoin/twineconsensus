@@ -44,28 +44,10 @@ int tw_compare(const tw_u512* a, const tw_u512* b) {
   return 0;
 }
 
-tw_u64 tw_prop_carry_word(tw_u64* y, const tw_u64 a, const tw_u64 carry) {
-  *y = a + carry;
-  tw_u64 carry_out = a == TW_U64_MAX && carry;
-  return carry_out != 0;
-}
-
-tw_u64 tw_prop_borrow_word(tw_u64* y, const tw_u64 a, const tw_u64 borrow) {
-  *y = a - borrow;
-  tw_u64 borrow_out = a == 0 && borrow;
-  return borrow_out != 0;
-}
-
 tw_u64 tw_add_word(tw_u64* y, const tw_u64 a, const tw_u64 b, const tw_u64 carry) {
   *y = a + b + carry;
   tw_u64 carry_out = (b == TW_U64_MAX && carry) || (*y < a);
   return carry_out != 0;
-}
-
-tw_u64 tw_sub_word(tw_u64* y, const tw_u64 a, const tw_u64 b, const tw_u64 borrow) {
-  *y = a - b - borrow;
-  tw_u64 borrow_out = (b == TW_U64_MAX && borrow) || (*y > a);
-  return borrow_out != 0;
 }
 
 int tw_add(tw_u512* y, const tw_u512* a, const tw_u512* b) {
@@ -76,68 +58,16 @@ int tw_add(tw_u512* y, const tw_u512* a, const tw_u512* b) {
   return carry != 0;
 }
 
-int tw_add_32_lshift(tw_u512* y, const tw_u512* a, const tw_u64 b, const tw_u32 left_shift) {
-  int masked_shift = left_shift & 15;
-  tw_u64 carry = 0;
-  int first = masked_shift >> 1;
-  int i;
-  for (i = 0; i < first; i++) {
-    y->d[i] = a->d[i];
-  }
-  if ((masked_shift & 1) == 0) {
-    carry = tw_add_word(&y->d[i], a->d[i], b, carry);
-  } else {
-    carry = tw_add_word(&y->d[i], a->d[i], b << 32, carry);
-    if (i < 7) {
-      i++;
-      carry = tw_add_word(&y->d[i], a->d[i], (b >> 32) & TW_U32_MAX, carry);
-    } else {
-      carry = carry || (b >> 32) != 0;
-    }
-  }
-  i++;
-  for (;i < 8 && carry != 0; i++) {
-    carry = tw_prop_carry_word(&y->d[i], a->d[i], carry);
-  }
-  for (;i < 8; i++) {
-    y->d[i] = a->d[i];
-  }
-  return carry != 0;
+tw_u64 tw_sub_word(tw_u64* y, const tw_u64 a, const tw_u64 b, const tw_u64 borrow) {
+  *y = a - b - borrow;
+  tw_u64 borrow_out = (b == TW_U64_MAX && borrow) || (*y > a);
+  return borrow_out != 0;
 }
 
 int tw_sub(tw_u512* y, const tw_u512* a, const tw_u512* b) {
   tw_u64 borrow = 0;
   for (int i = 0; i < 8; i++) {
     borrow = tw_sub_word(&y->d[i], a->d[i], b->d[i], borrow);
-  }
-  return borrow != 0;
-}
-
-int tw_sub_32_lshift(tw_u512* y, const tw_u512* a, const tw_u64 b, const tw_u32 left_shift) {
-  int masked_shift = left_shift & 15;
-  tw_u64 borrow = 0;
-  int first = masked_shift >> 1;
-  int i;
-  for (i = 0; i < first; i++) {
-    y->d[i] = a->d[i];
-  }
-  if ((masked_shift & 1) == 0) {
-    borrow = tw_sub_word(&y->d[i], a->d[i], b, borrow);
-  } else {
-    borrow = tw_sub_word(&y->d[i], a->d[i], b << 32, borrow);
-    if (i < 7) {
-      i++;
-      borrow = tw_sub_word(&y->d[i], a->d[i], (b >> 32) & TW_U32_MAX, borrow);
-    } else {
-      borrow = borrow || (b >> 32) != 0;
-    }
-  }
-  i++;
-  for (;i < 8 && borrow != 0; i++) {
-    borrow = tw_prop_borrow_word(&y->d[i], a->d[i], borrow);
-  }
-  for (;i < 8; i++) {
-    y->d[i] = a->d[i];
   }
   return borrow != 0;
 }
@@ -203,142 +133,4 @@ int tw_mul(tw_u512* y, const tw_u512* a, const tw_u512* b) {
   u512_to_u32_words(b32, b);
 
   return tw_mul_internal(y, a32, b32, 16, 0) != 0;
-}
-
-int tw_mul_32_lshift(tw_u512* y, const tw_u512* a, const tw_u64 b, const tw_u32 left_shift) {
-  tw_u64 a32[16];
-  tw_u64 b32[2];
-
-  u512_to_u32_words(a32, a);
-  b32[0] = b & TW_U32_MAX;
-  b32[1] = b >> 32;
-
-  int masked_shift = left_shift & 15;
-
-  return tw_mul_internal(y, a32, b32, 2, masked_shift) != 0;
-}
-
-int msb_position(const tw_u64 a) {
-  tw_u64 remainder = a;
-  int msb_pos = 0;
-  for (int bit_width = 32; bit_width > 0; bit_width >>= 1) {
-    tw_u64 threshold = ((tw_u64) 1) << bit_width;
-    if (remainder >= threshold) {
-      msb_pos += bit_width;
-      remainder >>= bit_width;
-    }
-  }
-  return msb_pos;
-}
-
-tw_u64_float u512_to_u64_float(const tw_u512* a, tw_i32 b_exp) {
-  tw_u64_float a_float;
-  // If a is zero, then the for loop will not modify a_float
-  a_float.man = 0;
-  a_float.w_exp = 0;
-  a_float.b_exp = 0;
-  for (int i = 7; i >= 0; i--) {
-    tw_u64 msw = a->d[i];
-    if (msw == 0) {
-      continue;
-    }
-    tw_u64 smsw = i == 0 ? 0 : a->d[i-1];
-    int msb_pos = msb_position(msw);
-
-    tw_u32 b_exp_auto;
-    if (b_exp < 0) {
-      b_exp_auto = (msb_pos + 1) & 0x1F;
-    } else {
-      b_exp_auto = b_exp & 0x1F;
-    }
-
-    int left_shift = (32 - b_exp_auto) & 31;
-    if (msb_pos + left_shift < 64) {
-      if (msb_pos + left_shift < 32) {
-        left_shift += 32;
-      }
-      a_float.man = msw << left_shift;
-      if (left_shift != 0) {
-        a_float.man |= smsw >> (64 - left_shift);
-      }
-    } else {
-      left_shift -= 32;
-      assert(left_shift < 0);
-      a_float.man = msw >> (-left_shift);
-    }
-    a_float.b_exp = b_exp_auto;
-    // Total exponential is (i * 2 * 32) - left_shift = 32 * w_exp + b_exp
-    // 32 * w_exp = 32 * (i * 2) - (left_shift + b_exp)
-    // w_exp = (i * 2) - (left_shift + b_exp) / 32
-    // (left_shift + b_exp) is evenly divisible by 32
-    // (left_shift + b_exp) = (k * 32 + (32 - b_exp)) + b_exp
-    //                      = 32 * (k + 1) - b_exp + b_exp
-    //                      = 32 * (k + 1)
-    tw_i32 offset = left_shift + b_exp_auto;
-    assert((offset & 31) == 0);
-    a_float.w_exp = (i * 2) - (offset >> 5);
-    return a_float;
-  }
-  return a_float;
-}
-
-int tw_div_rem(tw_u512* y, tw_u512* z, const tw_u512* a, const tw_u512* b) {
-  // Check divide by zero
-  if (tw_equal(b, &TW_ZERO)) {
-    return 1;
-  }
-
-  // Initialize the remainder and quotient
-  tw_u512 rem, quot;
-  tw_set_512(&rem, a);
-  tw_set_512(&quot, &TW_ZERO);
-
-  tw_u64_float b_float = u512_to_u64_float(b, -1);
-  // Shift the MSB of b_float to bit 31 instead of bit 63
-  b_float.w_exp++;
-  b_float.man >>= 32;
-
-  while (tw_compare(&rem, b) >= 0) {
-    // Convert rem into a float with the mantissa aligned with b_float
-    tw_u64_float rem_float = u512_to_u64_float(&rem, b_float.b_exp);
-    assert(rem_float.man > TW_U32_MAX);
-
-    tw_u64_float estimate_float;
-    estimate_float.man = rem_float.man / b_float.man;
-    estimate_float.w_exp = rem_float.w_exp - b_float.w_exp;
-    estimate_float.b_exp = 0;
-    assert(rem_float.b_exp == b_float.b_exp);
-
-    if (estimate_float.man > TW_U32_MAX) {
-      estimate_float.man = TW_U32_MAX;
-    }
-
-    if (estimate_float.w_exp < 0) {
-      assert(estimate_float.w_exp == -1);
-      estimate_float.man >>= 32;
-      estimate_float.w_exp++;
-    }
-
-    // The ideal quotient is in the range [estimate_float.man - 2, estimate_float.man]
-    tw_u64 low_estimate_man = estimate_float.man > 2 ? (estimate_float.man - 2) : 1;
-
-    for (int i = 0; i < 3; i++) {
-      estimate_float.man = i == 0 ? low_estimate_man : 1;
-      tw_u512 prod;
-      int overflow = tw_mul_32_lshift(&prod, b, estimate_float.man, estimate_float.w_exp);
-      assert(overflow == 0);
-      tw_u512 sub;
-      int borrow = tw_sub(&sub, &rem, &prod);
-      if (borrow) {
-        assert(i != 0);
-        break;
-      }
-      tw_set_512(&rem, &sub);
-      int carry = tw_add_32_lshift(&quot, &quot, estimate_float.man, estimate_float.w_exp);
-      assert(carry == 0);
-    }
-  }
-  tw_set_512(z, &rem);
-  tw_set_512(y, &quot);
-  return 0;
 }

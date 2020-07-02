@@ -65,21 +65,6 @@ START_TEST (test_tw_add) {
 }
 END_TEST
 
-START_TEST (test_tw_add_32_lshift) {
-  tw_u512 a, y;
-  tw_u64 b;
-  tw_u32 shift;
-  for (int i = 0; i < U512_TEST_VECTORS_512X64_LENGTH; i++) {
-    a = u512_test_vectors_512x64[i].a;
-    b = u512_test_vectors_512x64[i].b;
-    shift = u512_test_vectors_512x64[i].s;
-    int carry = u512_test_vectors_512x64[i].a_add_b_carry;
-    ck_assert_msg(tw_add_32_lshift(&y, &a, b, shift) == carry, "Addition with left shift carry check failed for vector %d", i);
-    ck_assert_msg(tw_equal(&y, &u512_test_vectors_512x64[i].a_add_b), "Addition with left shift mismatch for vector %d", i);
-  }
-}
-END_TEST
-
 START_TEST (test_tw_sub) {
   tw_u512 a, b, y;
   for (int i = 0; i < U512_TEST_VECTORS_512X512_LENGTH; i++) {
@@ -88,21 +73,6 @@ START_TEST (test_tw_sub) {
     int borrow = u512_test_vectors_512x512[i].a_sub_b_borrow;
     ck_assert_msg(tw_sub(&y, &a, &b) == borrow, "Subtraction carry check failed for vector %d", i);
     ck_assert_msg(tw_equal(&y, &u512_test_vectors_512x512[i].a_sub_b), "Subtraction mismatch for vector %d", i);
-  }
-}
-END_TEST
-
-START_TEST (test_tw_sub_32_lshift) {
-  tw_u512 a, y;
-  tw_u64 b;
-  tw_u32 shift;
-  for (int i = 0; i < U512_TEST_VECTORS_512X64_LENGTH; i++) {
-    a = u512_test_vectors_512x64[i].a;
-    b = u512_test_vectors_512x64[i].b;
-    shift = u512_test_vectors_512x64[i].s;
-    int borrow = u512_test_vectors_512x64[i].a_sub_b_borrow;
-    ck_assert_msg(tw_sub_32_lshift(&y, &a, b, shift) == borrow, "Subtraction with left shift borrow check failed for vector %d", i);
-    ck_assert_msg(tw_equal(&y, &u512_test_vectors_512x64[i].a_sub_b), "Subtraction with left shift mismatch for vector %d", i);
   }
 }
 END_TEST
@@ -119,52 +89,10 @@ START_TEST (test_tw_mul) {
 }
 END_TEST
 
-START_TEST (test_tw_mul_32_lshift) {
-  tw_u512 a, y;
-  tw_u64 b;
-  tw_u32 shift;
-  for (int i = 0; i < U512_TEST_VECTORS_512X64_LENGTH; i++) {
-    a = u512_test_vectors_512x64[i].a;
-    b = u512_test_vectors_512x64[i].b;
-    shift = u512_test_vectors_512x64[i].s;
-    int overflow = u512_test_vectors_512x64[i].a_mul_b_overflow;
-    ck_assert_msg(tw_mul_32_lshift(&y, &a, b, shift) == overflow, "Multiplication with left shift overflow check failed for vector %d", i);
-    ck_assert_msg(tw_equal(&y, &u512_test_vectors_512x64[i].a_mul_b), "Multiplication with left shift mismatch for vector %d", i);
-  }
-}
-END_TEST
-
-START_TEST (test_msb_position) {
-  tw_u512 a, y;
-  tw_i32 b_exp;
-  for (int i = 0; i < U512_TEST_VECTORS_512X64_LENGTH; i++) {
-    tw_u64 b = u512_test_vectors_512x64[i].b;
-    int msb_pos = msb_position(b);
-    int exp_msb_pos = u512_test_vectors_512x64[i].msb_pos;
-    ck_assert_msg(msb_pos == exp_msb_pos, "MSB position check failed for vector %d", i);
-  }
-}
-END_TEST
-
-START_TEST (test_u512_to_u64_float) {
-  tw_u512 a, y;
-  tw_i32 b_exp;
-  for (int i = 0; i < U512_TEST_VECTORS_512X64_LENGTH; i++) {
-    a = u512_test_vectors_512x64[i].a;
-    b_exp = u512_test_vectors_512x64[i].s;
-    tw_u64_float a_float = u512_to_u64_float(&a, b_exp);
-    tw_u64_float a_float_exp = u512_test_vectors_512x64[i].exp_float;
-    ck_assert_msg(a_float.man == a_float_exp.man, "U64 float conversion mantissa check failed for vector %d", i);
-    ck_assert_msg(a_float.w_exp == a_float_exp.w_exp, "U64 float conversion word exponent check failed for vector %d", i);
-    ck_assert_msg(a_float.b_exp == a_float_exp.b_exp, "U64 float conversion bit exponent check failed for vector %d", i);
-  }
-}
-END_TEST
-
+/*
 START_TEST (test_tw_div_rem) {
   tw_u512 a, b, y, z;
   for (int i = 0; i < U512_TEST_VECTORS_512X512_LENGTH; i++) {
-    printf("Running vector: %d\n", i);
     a = u512_test_vectors_512x512[i].a;
     b = u512_test_vectors_512x512[i].b;
     int div_by_0 = u512_test_vectors_512x512[i].div_by_0;
@@ -176,6 +104,7 @@ START_TEST (test_tw_div_rem) {
   }
 }
 END_TEST
+*/
 
 Suite * uint_suite(void) {
   Suite *s;
@@ -190,14 +119,9 @@ Suite * uint_suite(void) {
   tcase_add_test(tc_core, test_tw_equal);
   tcase_add_test(tc_core, test_tw_compare);
   tcase_add_test(tc_core, test_tw_add);
-  tcase_add_test(tc_core, test_tw_add_32_lshift);
   tcase_add_test(tc_core, test_tw_sub);
-  tcase_add_test(tc_core, test_tw_sub_32_lshift);
   tcase_add_test(tc_core, test_tw_mul);
-  tcase_add_test(tc_core, test_tw_mul_32_lshift);
-  tcase_add_test(tc_core, test_msb_position);
-  tcase_add_test(tc_core, test_u512_to_u64_float);
-  tcase_add_test(tc_core, test_tw_div_rem);
+  //tcase_add_test(tc_core, test_tw_div_rem);
   suite_add_tcase(s, tc_core);
 
   return s;
