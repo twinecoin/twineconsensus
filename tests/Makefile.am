@@ -1,6 +1,6 @@
 AM_CFLAGS =                   -I$(top_srcdir)/include -std=c99 @CHECK_CFLAGS@
 LDADD =                       $(top_builddir)/src/libtwineconsensus.la @CHECK_LIBS@
-AM_LDFLAGS =                  -static
+# AM_LDFLAGS =                  -static
 
 CLEANFILES =                  tw_lic_check
 

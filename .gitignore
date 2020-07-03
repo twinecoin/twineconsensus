@@ -21,8 +21,6 @@ src/tw_lic_check
 src/twineconsensustest
 src/twineconsensustest.exe
 
-src/math/src/.dirstamp
-
 tests/*.trs
 tests/.libs/
 tests/*.log
@@ -34,3 +32,5 @@ tests/test_uint.exe
 *.o
 *.lo
 *.la
+*.a
+*.dirstamp
