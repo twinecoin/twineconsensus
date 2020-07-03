@@ -246,7 +246,6 @@ START_TEST (test_tw_mul) {
 }
 END_TEST
 
-/*
 START_TEST (test_tw_div_rem) {
   tw_u512 a, b, y, z;
   for (int i = 0; i < U512_TEST_VECTORS_512X512_LENGTH; i++) {
@@ -261,7 +260,6 @@ START_TEST (test_tw_div_rem) {
   }
 }
 END_TEST
-*/
 
 Suite * uint_suite(void) {
   Suite *s;
@@ -278,7 +276,7 @@ Suite * uint_suite(void) {
   tcase_add_test(tc_core, test_tw_sub);
   tcase_add_test(tc_core, test_tw_mul);
   tcase_add_test(tc_core, test_tw_lshift);
-  //tcase_add_test(tc_core, test_tw_div_rem);
+  tcase_add_test(tc_core, test_tw_div_rem);
   suite_add_tcase(s, tc_core);
 
   return s;

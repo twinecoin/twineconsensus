@@ -5,7 +5,7 @@
 #include <assert.h>
 #include "tw_uint.h"
 
-const tw_u512 TW_ZERO        = {0, 0, 0, 0, 0, 0, 0, 0};
+const tw_u512 TW_U512_ZERO   = {0, 0, 0, 0, 0, 0, 0, 0};
 const tw_u512 TW_U512_ONE    = {1, 0, 0, 0, 0, 0, 0, 0};
 const tw_u512 TW_U512_MAX    = {TW_U64_MAX, TW_U64_MAX, TW_U64_MAX, TW_U64_MAX,
                                 TW_U64_MAX, TW_U64_MAX, TW_U64_MAX, TW_U64_MAX};
@@ -138,5 +138,54 @@ int tw_mul(tw_u512* y, const tw_u512* a, const tw_u512* b) {
     }
   }
 
+  return 0;
+}
+
+int tw_div_rem(tw_u512* y, tw_u512* z, const tw_u512* a, const tw_u512* b) {
+  if (tw_equal(b, &TW_U512_ZERO)) {
+    return 1;
+  }
+
+  int max_shift = 63;
+
+  for (int i = 7; b->d[i] == 0 && i > 0; i--) {
+    max_shift += 64;
+  }
+
+  for (int i = 7; a->d[i] == 0 && i >= 0; i--) {
+    max_shift -= 64;
+  }
+
+  // remainder = a
+  tw_u512 remainder = *a;
+  // quotient = 0
+  tw_u512 quotient = TW_U512_ZERO;
+  for (int i = max_shift; i >= 0 && tw_compare(&remainder, b) >= 0; i--) {
+    // estimate = 1 << i;
+    // product = b * estimate = b * (1 << i) = b << i
+    tw_u512 product;
+    int overflow = tw_lshift(&product, b, i);
+    // if product > TW_U512_MAX then product > remainder, so disregard estimate
+    if (overflow) {
+      continue;
+    }
+    // difference = remainder - product
+    tw_u512 difference;
+    int borrow = tw_sub(&difference, &remainder, &product);
+    // if borrow then product > remainder, so disregard estimate
+    if (borrow) {
+      continue;
+    }
+    remainder = difference;
+    // estimate = 1 << i
+    tw_u512 estimate;
+    overflow = tw_lshift(&estimate, &TW_U512_ONE, i);
+    assert(overflow == 0);
+    // quotient = quotient + estimate
+    int carry = tw_add(&quotient, &quotient, &estimate);
+    assert(carry == 0);
+  }
+  *y = quotient;
+  *z = remainder;
   return 0;
 }
