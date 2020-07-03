@@ -40,7 +40,7 @@ extern const tw_u512 TW_U512_MAX;
 #define TW_U32_MAX     (0xFFFFFFFFLU)
 
 /* Equality check
- * Returns 1 if equal
+ * returns 1 if equal
  */
 int tw_equal(const tw_u512* a, const tw_u512* b);
 
@@ -51,15 +51,21 @@ int tw_compare(const tw_u512* a, const tw_u512* b);
 
 /* Addition with carry
  * y = a + b
- * Returns 1 on carry
+ * returns 1 on carry
  */
 int tw_add(tw_u512* y, const tw_u512* a, const tw_u512* b);
 
 /* Subtraction with borrow
  * y = a - b
- * Returns 1 on borrow
+ * returns 1 on borrow
  */
 int tw_sub(tw_u512* y, const tw_u512* a, const tw_u512* b);
+
+/* Left shift with overflow
+ * y = a << (bitshift & 0x1FF)
+ * returns 1 on overflow
+ */
+int tw_lshift(tw_u512* y, const tw_u512*a, const tw_u32 bitshift);
 
 /* Multiply with overflow
  * y = a * b

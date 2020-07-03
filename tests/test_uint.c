@@ -165,7 +165,30 @@ START_TEST (test_tw_sub) {
     }
   }
 }
+END_TEST
 
+START_TEST (test_tw_lshift) {
+  for (int i = 0; i < U512_TEST_VECTORS_512X64_LENGTH; i++) {
+    tw_u512 y = {0};
+    tw_u512 a = u512_test_vectors_512x64[i].a;
+    tw_u32 bits = u512_test_vectors_512x64[i].s;
+    tw_u512 expected = u512_test_vectors_512x64[i].a_lshift;
+    int overflow = u512_test_vectors_512x64[i].a_lshift_overflow;
+    const tw_u512 a_old = a;
+
+    ck_assert_msg(tw_lshift(&y, &a, bits) == overflow, "Left-shift overflow check failed for vector %d", i);
+    ck_assert_msg(tw_equal(&expected, &y), "Left-shift mismatch for vector %d", i);
+    ck_assert_msg(tw_equal(&a_old, &a), "A altered for Left-shift check for vector %d", i);
+
+    a = u512_test_vectors_512x64[i].a;
+    bits = u512_test_vectors_512x64[i].s;
+    expected = u512_test_vectors_512x64[i].a_lshift;
+    overflow = u512_test_vectors_512x64[i].a_lshift_overflow;
+
+    ck_assert_msg(tw_lshift(&a, &a, bits) == overflow, "Left-shift overflow self-target check failed for vector %d", i);
+    ck_assert_msg(tw_equal(&expected, &a), "Left-shift self-target mismatch for vector %d", i);
+  }
+}
 END_TEST
 
 START_TEST (test_tw_mul) {
@@ -254,6 +277,7 @@ Suite * uint_suite(void) {
   tcase_add_test(tc_core, test_tw_add);
   tcase_add_test(tc_core, test_tw_sub);
   tcase_add_test(tc_core, test_tw_mul);
+  tcase_add_test(tc_core, test_tw_lshift);
   //tcase_add_test(tc_core, test_tw_div_rem);
   suite_add_tcase(s, tc_core);
 
