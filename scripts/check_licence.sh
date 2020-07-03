@@ -5,9 +5,18 @@ line_count=4
 pass=1
 first=1
 
-declare -A duplicate_set
+declare -A c_and_h_files
 
 for file in $@
+do
+  c_and_h_files[$file]=1
+  header_filename="${file/%\.c/.h}"
+  c_and_h_files[$header_filename]=1
+done
+
+declare -A duplicate_set
+
+for file in ${!c_and_h_files[@]}
 do
   if ( [ -e $file ] )
   then
