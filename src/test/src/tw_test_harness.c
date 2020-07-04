@@ -74,9 +74,23 @@ tw_u512 tw_th_sha_256(const tw_u8* message, const tw_u64 len) {
   return tw_sha_256(message, len);
 }
 
+tw_u512 tw_th_dsha_256(const tw_u8* message, const tw_u64 len) {
+  if (tw_test_harness_lock) {
+    return TW_U512_ZERO;
+  }
+  return tw_dsha_256(message, len);
+}
+
 tw_u512 tw_th_sha_512(const tw_u8* message, const tw_u64 len) {
   if (tw_test_harness_lock) {
     return TW_U512_ZERO;
   }
   return tw_sha_512(message, len);
+}
+
+tw_u512 tw_th_dsha_512(const tw_u8* message, const tw_u64 len) {
+  if (tw_test_harness_lock) {
+    return TW_U512_ZERO;
+  }
+  return tw_dsha_512(message, len);
 }
