@@ -29,6 +29,9 @@ tests/tw_lic_check
 tests/test_uint
 tests/test_uint.exe
 
+tests/test_hash
+tests/test_hash.exe
+
 *.o
 *.lo
 *.la

@@ -28,7 +28,7 @@ typedef struct _tw_u512 {
 } tw_u512;
 
 /* Some constants */
-extern const tw_u512 TW_UINT_ZERO;
+extern const tw_u512 TW_U512_ZERO;
 extern const tw_u512 TW_U512_ONE;
 extern const tw_u512 TW_U512_MAX;
 

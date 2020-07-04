@@ -26,12 +26,12 @@ libsha256_a_CFLAGS           = -fPIC -I./nacl/include -I./nacl/src/sha256/includ
 
 lib_LTLIBRARIES		     = libtwineconsensus.la
 
-TWINECONSENSUS_C_FILES       = twineconsensus.c ./math/src/tw_uint.c ./test/src/tw_test_harness.c
+TWINECONSENSUS_C_FILES       = twineconsensus.c ./math/src/tw_uint.c ./crypt/src/tw_hash.c ./test/src/tw_test_harness.c
 TWINECONSENSUS_LIB_FILES     = librandombytes.a libcrypto_verify.a libed25519.a libsha512.a libsha256.a
 libtwineconsensus_la_SOURCES = $(TWINECONSENSUS_C_FILES) $(TWINECONSENSUS_LIB_FILES)
 libtwineconsensus_la_CFLAGS  = -L../src/ -led25519 -lcrypto_verify -lrandombytes -lsha512 -lsha256
+libtwineconsensus_la_CFLAGS += -I./math/src/ -I./crypt/src -I./nacl/include
 libtwineconsensus_la_LDFLAGS = -export-symbols export-functions -no-undefined -version-info @twcon_ver@:@twcon_rev@:@twcon_age@
-libtwineconsensus_LDADD      = $(TWINECONSENSUS_LIB_FILES)
 
 include_HEADERS              = ../include/twineconsensus.h
 

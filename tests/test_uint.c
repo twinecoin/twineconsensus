@@ -6,8 +6,8 @@
 #include <check.h>
 
 #include "twineconsensus.h"
-#include "../src/math/src/tw_uint.h"
-#include "../src/test/src/tw_test_harness.h"
+#include "tw_uint.h"
+#include "tw_test_harness.h"
 #include "vectors/vectors_u512.h"
 
 // Test if two u512 integers are equal.
@@ -59,6 +59,7 @@ START_TEST(test_tw_th_unlock_test_functions) {
   ck_assert_msg(tw_th_mul(&y, &a, &b) == 0, "Test harness enabled after re-lock for tw_th_mul");
   ck_assert_msg(tw_th_div_rem(&y, &z, &a, &d) == 0, "Test harness enabled after re-lock for tw_th_div_rem");
 
+  // Verify unlock fails with incorrect code
   tw_th_unlock_test_functions(TW_TEST_HARNESS_UNLOCK_CODE ^ 0x0040000000000000ULL, 1);
   ck_assert_msg(tw_th_equal(&a, &b) == 0, "Test harness enabled after bad code for tw_th_equal");
   ck_assert_msg(tw_th_compare(&a, &c) == 0, "Test harness enabled after bad code for tw_th_compare");
@@ -331,7 +332,7 @@ Suite * uint_suite(void) {
   s = suite_create("UINT-512 Test Suite");
 
   /* Core test case */
-  tc_core = tcase_create("Equal test");
+  tc_core = tcase_create("UInt Tests");
 
   tcase_add_test(tc_core, test_tw_th_unlock_test_functions);
   tcase_add_test(tc_core, test_tw_equal);
