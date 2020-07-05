@@ -7,6 +7,13 @@
 
 #include "tw_uint.h"
 
+/* Converts a little endian digest into a tw_u512 integer
+ * If the byte array is more than 64 bytes, the excess bytes
+ * are ignored
+ * return (tw_u512) little_endian_to_int(bytes)
+ */
+tw_u512 tw_le_to_tw_u512(const tw_u8* bytes);
+
 /* Computes the SHA256 digest for a byte array as a little endian
  * tw_u512 integer
  * returns SHA256(message of length len)

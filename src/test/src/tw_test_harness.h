@@ -37,6 +37,7 @@ int tw_th_div_rem(tw_u512* y, tw_u512* z, const tw_u512* a, const tw_u512* b);
 // tw_hash functions
 tw_u512 tw_th_sha_256(const tw_u8* message, const tw_u64 len);
 tw_u512 tw_th_dsha_256(const tw_u8* message, const tw_u64 len);
+tw_u512 tw_th_ripemd_160(const tw_u8* message, const tw_u64 len);
 tw_u512 tw_th_sha_512(const tw_u8* message, const tw_u64 len);
 tw_u512 tw_th_dsha_512(const tw_u8* message, const tw_u64 len);
 

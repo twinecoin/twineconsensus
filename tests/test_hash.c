@@ -14,8 +14,6 @@
 
 #define MAX_BUFFER 1000000
 
-#include <stdio.h>
-
 void unlock_test_harness(int unlock) {
     tw_th_unlock_test_functions(TW_TEST_HARNESS_UNLOCK_CODE, unlock);
 }
@@ -52,6 +50,8 @@ void test_locked(char* message) {
   ck_assert_msg(test_u512_equal(digest, zero), "Test harness enabled %s for tw_th_sha_512", message);
   digest = tw_th_dsha_512(NULL, 0);
   ck_assert_msg(test_u512_equal(digest, zero), "Test harness enabled %s for tw_th_dsha_512", message);
+  digest = tw_th_ripemd_160(NULL, 0);
+  ck_assert_msg(test_u512_equal(digest, zero), "Test harness enabled %s for tw_th_ripemd_160", message);
 }
 
 START_TEST(test_tw_th_unlock_test_functions) {
@@ -140,6 +140,23 @@ START_TEST (test_tw_dsha_512) {
 }
 END_TEST
 
+START_TEST (test_tw_ripemd_160) {
+  unlock_test_harness(1);
+
+  tw_u8 buffer[MAX_BUFFER];
+
+  for (int i = 0; i < HASH_TEST_VECTORS_LENGTH; i++) {
+    tw_u512 expected = tw_ripemd160_test_vector_hashes[i];
+    tw_u8* message = tw_hash_test_vector_messages[i];
+    int len = tw_hash_test_vector_message_lengths[i];
+    int rep = tw_hash_test_vector_message_repeats[i];
+    ck_assert_msg(repeat_message(buffer, message, len, rep), "Failed to repeat message for RIPEMD160 Check");
+    tw_u512 digest = tw_th_ripemd_160(buffer, len * rep);
+    ck_assert_msg(tw_th_equal(&digest, &expected), "Hash mismatch for RIPEMD160 check for vector %d", i);
+  }
+}
+END_TEST
+
 Suite * uint_suite(void) {
   Suite *s;
   TCase *tc_core;
@@ -154,6 +171,7 @@ Suite * uint_suite(void) {
   tcase_add_test(tc_core, test_tw_dsha_256);
   tcase_add_test(tc_core, test_tw_sha_512);
   tcase_add_test(tc_core, test_tw_dsha_512);
+  tcase_add_test(tc_core, test_tw_ripemd_160);
   suite_add_tcase(s, tc_core);
 
   return s;

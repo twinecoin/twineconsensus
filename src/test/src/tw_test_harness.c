@@ -5,6 +5,7 @@
 #include "tw_test_harness.h"
 
 #include "tw_hash.h"
+#include "tw_ripemd_160.h"
 
 static int tw_test_harness_lock = 1;
 
@@ -93,4 +94,11 @@ tw_u512 tw_th_dsha_512(const tw_u8* message, const tw_u64 len) {
     return TW_U512_ZERO;
   }
   return tw_dsha_512(message, len);
+}
+
+tw_u512 tw_th_ripemd_160(const tw_u8* message, const tw_u64 len) {
+  if (tw_test_harness_lock) {
+    return TW_U512_ZERO;
+  }
+  return tw_ripemd_160(message, len);
 }
