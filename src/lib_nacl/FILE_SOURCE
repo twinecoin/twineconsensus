@@ -1,0 +1,19 @@
+The sha256/512 implementations are from the NaCl (20110221) cryptography library.
+
+The NaCl library was placed in the public domain by its authors.
+
+The ed25519 implementation is from the SUPERCOP (20200618) cryptography library.  
+
+The implementation was also placed in the public domain by its authors.
+
+The build processes for the two libraries use algorithm specific header files with some filename collisions.
+
+Colliding header files are placed in src/$algorithm/include.
+
+These files are not provided in the library distribution and are produced when building the library. 
+
+The versions generated for building the reference implementation of each algorithm are included.
+
+The c source files are placed unchanged in src/$algorithm/src.
+
+The integer definition headers were modified to use stdint.h instead of long long for 64 bit integers.
