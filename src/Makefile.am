@@ -2,11 +2,19 @@ AM_CFLAGS                    = -I$(top_srcdir)/include -fvisibility=hidden -std=
 
 CLEANFILES                   = tw_lic_check
 
-noinst_LIBRARIES             = libcrypto_verify.a libed25519.a libsha512.a libsha256.a
+noinst_LIBRARIES             = libcrypto_verify.a
+noinst_LIBRARIES            += libed25519.a
+noinst_LIBRARIES            += libsha512.a
+noinst_LIBRARIES            += libsha256.a
 
+# Crypto verify library
 libcrypto_verify_a_SOURCES   = ./lib_supercop/src/crypto_verify/32/src/verify.c
-libcrypto_verify_a_CFLAGS    = -fPIC -I./lib_supercop/include -I./lib_supercop/src/crypto_verify/32/include
 
+libcrypto_verify_a_CFLAGS    = -fPIC
+libcrypto_verify_a_CFLAGS   += -I./lib_supercop/include
+libcrypto_verify_a_CFLAGS   += -I./lib_supercop/src/crypto_verify/32/include
+
+# Ed25519 library
 libed25519_a_SOURCES         = ./lib_supercop/src/ed25519/src/fe_0.c
 libed25519_a_SOURCES        += ./lib_supercop/src/ed25519/src/fe_neg.c
 libed25519_a_SOURCES        += ./lib_supercop/src/ed25519/src/ge_msub.c
@@ -50,25 +58,47 @@ libed25519_a_CFLAGS         += -I./lib_supercop/include
 libed25519_a_CFLAGS         += -I./lib_supercop/src/ed25519/include
 libed25519_a_CFLAGS         += -I./lib_nacl/include
 
+# SHA512 library
 libsha512_a_SOURCES          = ./lib_nacl/src/sha512/src/hash.c
 libsha512_a_SOURCES         += ./lib_nacl/src/sha512_block/src/blocks.c
-libsha512_a_CFLAGS           = -fPIC -I./lib_nacl/include -I./lib_nacl/src/sha512/include -I./lib_nacl/src/sha512_block/include
 
+libsha512_a_CFLAGS           = -fPIC
+libsha512_a_CFLAGS          += -I./lib_nacl/include
+libsha512_a_CFLAGS          += -I./lib_nacl/src/sha512/include
+libsha512_a_CFLAGS          += -I./lib_nacl/src/sha512_block/include
+
+# SHA256 library
 libsha256_a_SOURCES          = ./lib_nacl/src/sha256/src/hash.c
 libsha256_a_SOURCES         += ./lib_nacl/src/sha256_block/src/blocks.c
+
 libsha256_a_CFLAGS           = -fPIC -I./lib_nacl/include -I./lib_nacl/src/sha256/include -I./lib_nacl/src/sha256_block/include
 
+# Main Twineconsensus shared library
 lib_LTLIBRARIES		     = libtwineconsensus.la
 
 TWINECONSENSUS_C_FILES       = twineconsensus.c
 TWINECONSENSUS_C_FILES      += ./math/src/tw_uint.c
-TWINECONSENSUS_C_FILES      += ./crypt/src/tw_hash.c ./crypt/src/tw_ripemd_160.c
+TWINECONSENSUS_C_FILES      += ./crypt/src/tw_hash.c
+TWINECONSENSUS_C_FILES      += ./crypt/src/tw_ripemd_160.c
 TWINECONSENSUS_C_FILES      += ./test/src/tw_test_harness.c
+
 TWINECONSENSUS_LIB_FILES     = libcrypto_verify.a libed25519.a libsha512.a libsha256.a
+
 libtwineconsensus_la_SOURCES = $(TWINECONSENSUS_C_FILES) $(TWINECONSENSUS_LIB_FILES)
-libtwineconsensus_la_CFLAGS  = -L../src/ -led25519 -lcrypto_verify -lsha512 -lsha256
-libtwineconsensus_la_CFLAGS += -I./math/src/ -I./crypt/src -I./lib_nacl/include -I./lib_supercop/include
-libtwineconsensus_la_LDFLAGS = -export-symbols export-functions -no-undefined -version-info @twcon_ver@:@twcon_rev@:@twcon_age@
+
+libtwineconsensus_la_CFLAGS  = -L../src/
+libtwineconsensus_la_CFLAGS += -led25519
+libtwineconsensus_la_CFLAGS += -lcrypto_verify
+libtwineconsensus_la_CFLAGS += -lsha512
+libtwineconsensus_la_CFLAGS += -lsha256
+libtwineconsensus_la_CFLAGS += -I./math/src/
+libtwineconsensus_la_CFLAGS += -I./crypt/src
+libtwineconsensus_la_CFLAGS += -I./lib_nacl/include
+libtwineconsensus_la_CFLAGS += -I./lib_supercop/include
+
+libtwineconsensus_la_LDFLAGS  = -export-symbols export-functions
+libtwineconsensus_la_LDFLAGS += -no-undefined
+libtwineconsensus_la_LDFLAGS += -version-info @twcon_ver@:@twcon_rev@:@twcon_age@
 
 include_HEADERS              = ../include/twineconsensus.h
 
