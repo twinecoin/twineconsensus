@@ -80,6 +80,7 @@ TWINECONSENSUS_C_FILES       = twineconsensus.c
 TWINECONSENSUS_C_FILES      += ./math/src/tw_uint.c
 TWINECONSENSUS_C_FILES      += ./crypt/src/tw_hash.c
 TWINECONSENSUS_C_FILES      += ./crypt/src/tw_ripemd_160.c
+TWINECONSENSUS_C_FILES      += ./crypt/src/tw_signature_verify.c
 TWINECONSENSUS_C_FILES      += ./test/src/tw_test_harness.c
 
 TWINECONSENSUS_LIB_FILES     = libcrypto_verify.a libed25519.a libsha512.a libsha256.a

@@ -11,3 +11,4 @@ tw_th_ripemd_160
 tw_th_dsha_256
 tw_th_sha_512
 tw_th_dsha_512
+tw_th_checksig_ed25519

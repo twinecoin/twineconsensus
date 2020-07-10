@@ -6,6 +6,7 @@
 
 #include "tw_hash.h"
 #include "tw_ripemd_160.h"
+#include "tw_signature_verify.h"
 
 static int tw_test_harness_lock = 1;
 
@@ -101,4 +102,13 @@ tw_u512 tw_th_ripemd_160(const tw_u8* message, const tw_u64 len) {
     return TW_U512_ZERO;
   }
   return tw_ripemd_160(message, len);
+}
+
+int tw_th_checksig_ed25519(tw_u8* message, tw_u32* message_length,
+                           const tw_u8* signature, const tw_u32 signature_length,
+                           const tw_u8* public_key) {
+  if (tw_test_harness_lock) {
+    return 0;
+  }
+  return tw_checksig_ed25519(message, message_length, signature, signature_length, public_key);
 }

@@ -41,4 +41,10 @@ tw_u512 tw_th_ripemd_160(const tw_u8* message, const tw_u64 len);
 tw_u512 tw_th_sha_512(const tw_u8* message, const tw_u64 len);
 tw_u512 tw_th_dsha_512(const tw_u8* message, const tw_u64 len);
 
+// tw_signature_verify functions
+int tw_th_checksig_ed25519(tw_u8* message, tw_u32* message_length,
+                           const tw_u8* signature, const tw_u32 signature_length,
+                           const tw_u8* public_key);
+
+
 #endif

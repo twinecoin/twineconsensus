@@ -32,6 +32,9 @@ tests/test_uint.exe
 tests/test_hash
 tests/test_hash.exe
 
+tests/test_ed25519
+tests/test_ed25519.exe
+
 *.o
 *.lo
 *.la
