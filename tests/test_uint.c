@@ -350,14 +350,57 @@ END_TEST
 START_TEST (test_tw_mod) {
   unlock_test_harness(1);
 
-  tw_u512 a, b, y;
   for (int i = 0; i < U512_TEST_VECTORS_512X512_LENGTH; i++) {
-    a = u512_test_vectors_512x512[i].a;
-    b = u512_test_vectors_512x512[i].b;
-    int div_by_0 = u512_test_vectors_512x512[i].div_by_0;
-    ck_assert_msg(tw_th_mod(&y, &a, &b) == div_by_0, "Divide by zero check failed for vector %d", i);
-    if (!div_by_0) {
-      ck_assert_msg(tw_th_equal(&y, &u512_test_vectors_512x512[i].a_rem_b), "Modulus mismatch for vector %d", i);
+    for (int j = 0; j < 5; j++) {
+      int div_by_zero = u512_test_vectors_512x512[i].div_by_0;
+      const tw_u512 expected = u512_test_vectors_512x512[i].a_rem_b;
+      tw_u512 y = {0};
+      tw_u512* y_ptr = &y;
+      tw_u512 a = u512_test_vectors_512x512[i].a;
+      tw_u512 b = u512_test_vectors_512x512[i].b;
+      const tw_u512 a_old = a;
+      const tw_u512 b_old = b;
+
+      int div_by_zero_out;
+      char* name;
+      if (j == 0) {
+        name = "y = a mod b";
+        y_ptr = &y;
+        div_by_zero_out = tw_th_mod(&y, &a, &b);
+      } else if (j == 1) {
+        y_ptr = &a;
+        div_by_zero_out = tw_th_mod(&a, &a, &b);
+        name = "a = a mod b";
+      } else if (j == 2) {
+        y_ptr = &b;
+        name = "b = a mod b";
+        div_by_zero_out = tw_th_mod(&b, &a, &b);
+      } else if (j == 3) {
+        if (!tw_th_equal(&a, &b)) {
+          continue;
+        }
+        y_ptr = &y;
+        name = "y = a mod a";
+        div_by_zero_out = tw_th_mod(&y, &a, &a);
+      } else if (j == 4) {
+        if (!tw_th_equal(&a, &b)) {
+          continue;
+        }
+        y_ptr = &a;
+        name = "a = a mod a";
+        div_by_zero_out = tw_th_mod(&a, &a, &a);
+      }
+
+      ck_assert_msg(div_by_zero_out == div_by_zero, "Divide by zero check failed for %s check for vector %d", name, i);
+      if (!div_by_zero) {
+        ck_assert_msg(tw_th_equal(y_ptr, &expected), "Remainder mismatch for %s check for vector %d", name, i);
+      }
+      if (j != 1 && j != 4) {
+        ck_assert_msg(tw_th_equal(&a_old, &a), "A altered for %s check for vector %d", name, i);
+      }
+      if (j != 2) {
+        ck_assert_msg(tw_th_equal(&b_old, &b), "B altered for %s check for vector %d", name, i);
+      }
     }
   }
 }

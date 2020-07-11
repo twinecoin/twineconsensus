@@ -244,6 +244,11 @@ int tw_mod(tw_u512* y, const tw_u512* a, const tw_u512* b) {
     return tw_div_rem(&x, y, a, b);
   }
 
+  // Path for when modulus is in range
+  // [FFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFE_00000000_00000000_00000000_00000000,
+  //  FFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF]
+  // inclusive
+
   if (tw_compare(a, b) < 0) {
     *y = *a;
     return 0;
@@ -251,15 +256,21 @@ int tw_mod(tw_u512* y, const tw_u512* a, const tw_u512* b) {
 
   tw_u512 mod = *a;
 
-  // x * pow(2, 256) + y mod m
-  // x * (pow(2, 256) mod m) + y mod m
-  // x * (pow(2, 256) - m mod m) + y mod m
-  // x * (pow(2, 256) - m) + y mod m
-  // x * reduced_multiplier + y mod m
+  // If the divisor is near the 256-bit maximum, then the mod can be simplified by
+  // applying this formula.
+  //
+  // mod = TH * pow(2, 256) + BH mod b
+  // mod = TH * (pow(2, 256) mod m) + BH mod b
+  // mod = TH * (pow(2, 256) - m mod m) + BH mod b
+  // mod = TH * (pow(2, 256) - m) + BH mod b
+  //
+  // reduced_multiplier = pow(2, 256) - b
+  // mod = TH * reduced_multiplier + BH mod b
   tw_u512 reduced_multiplier;
   int borrow = tw_sub(&reduced_multiplier, &TW_U512_SET_B256, b);
   assert(borrow == 0);
 
+  // Loop until none of the top 256 bits of mod are set
   while (tw_compare(&mod, &TW_U512_SET_B256) >= 0) {
     tw_u512 mod_top_half;
     tw_rshift(&mod_top_half, &mod, 256);
