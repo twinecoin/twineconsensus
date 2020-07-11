@@ -333,15 +333,81 @@ END_TEST
 START_TEST (test_tw_div_rem) {
   unlock_test_harness(1);
 
-  tw_u512 a, b, y, z;
   for (int i = 0; i < U512_TEST_VECTORS_512X512_LENGTH; i++) {
-    a = u512_test_vectors_512x512[i].a;
-    b = u512_test_vectors_512x512[i].b;
-    int div_by_0 = u512_test_vectors_512x512[i].div_by_0;
-    ck_assert_msg(tw_th_div_rem(&y, &z, &a, &b) == div_by_0, "Divide by zero check failed for vector %d", i);
-    if (!div_by_0) {
-      ck_assert_msg(tw_th_equal(&y, &u512_test_vectors_512x512[i].a_div_b), "Division mismatch for vector %d", i);
-      ck_assert_msg(tw_th_equal(&z, &u512_test_vectors_512x512[i].a_rem_b), "Remainder mismatch for vector %d", i);
+    for (int j = 0; j < 8; j++) {
+      int div_by_zero = u512_test_vectors_512x512[i].div_by_0;
+      const tw_u512 expected_y = u512_test_vectors_512x512[i].a_div_b;
+      const tw_u512 expected_z = u512_test_vectors_512x512[i].a_rem_b;
+      tw_u512 y = {0};
+      tw_u512 z = {0};
+      z.d[0]++;
+      tw_u512* y_ptr = &y;
+      tw_u512* z_ptr = &z;
+      tw_u512 a = u512_test_vectors_512x512[i].a;
+      tw_u512 b = u512_test_vectors_512x512[i].b;
+      const tw_u512 a_old = a;
+      const tw_u512 b_old = b;
+
+      int div_by_zero_out;
+      char* name;
+
+      if (j >= 5 && !tw_th_equal(&a, &b)) {
+        continue;
+      }
+
+      if (j == 0) {
+        y_ptr = &y;
+        z_ptr = &z;
+        div_by_zero_out = tw_th_div_rem(&y, &z, &a, &b);
+        name = "[y, z] = a / b";
+      } else if (j == 1) {
+        y_ptr = &y;
+        z_ptr = &a;
+        div_by_zero_out = tw_th_div_rem(&y, &a, &a, &b);
+        name = "[y, a] = a / b";
+      } else if (j == 2) {
+        y_ptr = &a;
+        z_ptr = &z;
+        div_by_zero_out = tw_th_div_rem(&a, &z, &a, &b);
+        name = "[a, z] = a / b";
+      } else if (j == 3) {
+        y_ptr = &y;
+        z_ptr = &b;
+        div_by_zero_out = tw_th_div_rem(&y, &b, &a, &b);
+        name = "[y, b] = a / b";
+      } else if (j == 4) {
+        y_ptr = &b;
+        z_ptr = &z;
+        div_by_zero_out = tw_th_div_rem(&b, &z, &a, &b);
+        name = "[b, z] = a / b";
+      } else if (j == 5) {
+        y_ptr = &y;
+        z_ptr = &z;
+        div_by_zero_out = tw_th_div_rem(&y, &z, &a, &a);
+        name = "[y, z] = a / a";
+      } else if (j == 6) {
+        y_ptr = &y;
+        z_ptr = &a;
+        div_by_zero_out = tw_th_div_rem(&y, &a, &a, &a);
+        name = "[y, a] = a / a";
+      } else {
+        y_ptr = &a;
+        z_ptr = &z;
+        div_by_zero_out = tw_th_div_rem(&a, &z, &a, &a);
+        name = "[a, z] = a / a";
+      }
+
+      ck_assert_msg(div_by_zero_out == div_by_zero, "Divide by zero check failed for %s check for vector %d", name, i);
+      if (!div_by_zero) {
+        ck_assert_msg(tw_th_equal(y_ptr, &expected_y), "Division mismatch for %s check for vector %d", name, i);
+        ck_assert_msg(tw_th_equal(z_ptr, &expected_z), "Remainder mismatch for %s check for vector %d", name, i);
+      }
+      if (j != 1 && j != 2 && j != 6 && j != 7) {
+        ck_assert_msg(tw_th_equal(&a_old, &a), "A altered for %s check for vector %d", name, i);
+      }
+      if (j != 3 && j != 4) {
+        ck_assert_msg(tw_th_equal(&b_old, &b), "B altered for %s check for vector %d", name, i);
+      }
     }
   }
 }

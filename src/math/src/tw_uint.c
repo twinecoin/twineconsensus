@@ -244,10 +244,10 @@ int tw_mod(tw_u512* y, const tw_u512* a, const tw_u512* b) {
     return tw_div_rem(&x, y, a, b);
   }
 
-  // Path for when modulus is in range
+  // This is a fast path for when the modulus is in the range
   // [FFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFE_00000000_00000000_00000000_00000000,
   //  FFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF]
-  // inclusive
+  // inclusive.  The reduced multiplier is at most 129 bits.
 
   if (tw_compare(a, b) < 0) {
     *y = *a;
