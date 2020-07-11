@@ -5,10 +5,11 @@
 #include <assert.h>
 #include "tw_uint.h"
 
-const tw_u512 TW_U512_ZERO   = {0, 0, 0, 0, 0, 0, 0, 0};
-const tw_u512 TW_U512_ONE    = {1, 0, 0, 0, 0, 0, 0, 0};
-const tw_u512 TW_U512_MAX    = {TW_U64_MAX, TW_U64_MAX, TW_U64_MAX, TW_U64_MAX,
-                                TW_U64_MAX, TW_U64_MAX, TW_U64_MAX, TW_U64_MAX};
+const tw_u512 TW_U512_ZERO      = {0, 0, 0, 0, 0, 0, 0, 0};
+const tw_u512 TW_U512_ONE       = {1, 0, 0, 0, 0, 0, 0, 0};
+const tw_u512 TW_U512_SET_B256  = {0, 0, 0, 0, 1, 0, 0, 0};
+const tw_u512 TW_U512_MAX       = {TW_U64_MAX, TW_U64_MAX, TW_U64_MAX, TW_U64_MAX,
+                                   TW_U64_MAX, TW_U64_MAX, TW_U64_MAX, TW_U64_MAX};
 
 int tw_equal(const tw_u512* a, const tw_u512* b) {
   for (int i = 0; i < 8; i++) {
@@ -232,6 +233,58 @@ int tw_div_rem(tw_u512* y, tw_u512* z, const tw_u512* a, const tw_u512* b) {
 }
 
 int tw_mod(tw_u512* y, const tw_u512* a, const tw_u512* b) {
-  tw_u512 x;
-  return tw_div_rem(&x, y, a, b);
+  // 256 bit lower mod limit for faster calculation path
+  // 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+  // FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFE 00000000 00000000 00000000 00000000
+  const tw_u512 min_mod   = {0,          0,          TW_U64_MAX - 1, TW_U64_MAX,
+                             0,          0,          0,              0};
+
+  if (tw_compare(b, &TW_U512_SET_B256) >= 0 || tw_compare(b, &min_mod) < 0) {
+    tw_u512 x;
+    return tw_div_rem(&x, y, a, b);
+  }
+
+  if (tw_compare(a, b) < 0) {
+    *y = *a;
+    return 0;
+  }
+
+  tw_u512 mod = *a;
+
+  // x * pow(2, 256) + y mod m
+  // x * (pow(2, 256) mod m) + y mod m
+  // x * (pow(2, 256) - m mod m) + y mod m
+  // x * (pow(2, 256) - m) + y mod m
+  // x * reduced_multiplier + y mod m
+  tw_u512 reduced_multiplier;
+  int borrow = tw_sub(&reduced_multiplier, &TW_U512_SET_B256, b);
+  assert(borrow == 0);
+
+  while (tw_compare(&mod, &TW_U512_SET_B256) >= 0) {
+    tw_u512 mod_top_half;
+    tw_rshift(&mod_top_half, &mod, 256);
+    tw_u512 product;
+    // The product cannot overflow
+    // reduced_multiplier is at most pow(2, 129) and mod_top_half is at most pow(2, 256).
+    // product = reduced_multiplier * mod_top_half
+    int overflow = tw_mul(&product, &reduced_multiplier, &mod_top_half);
+    assert(overflow == 0);
+    // mod = mod_bottom_half;
+    for (int i = 4; i < 8; i++) {
+      mod.d[i] = 0;
+    }
+    // mod = product + mod = reduced_multiplier * mod_top_half + mod_bottom_half
+    int carry = tw_add(&mod, &product, &mod);
+    assert(carry == 0);
+  }
+
+  // If mod falls between b and TW_U512_SET_B256, then subtract b to bring
+  // the value into range
+  if (tw_compare(&mod, b) >= 0) {
+    int borrow = tw_sub(&mod, &mod, b);
+    assert(borrow == 0);
+  }
+
+  *y = mod;
+  return 0;
 }

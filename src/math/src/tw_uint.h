@@ -30,6 +30,7 @@ typedef struct _tw_u512 {
 /* Some constants */
 extern const tw_u512 TW_U512_ZERO;
 extern const tw_u512 TW_U512_ONE;
+extern const tw_u512 TW_U512_SET_B256;
 extern const tw_u512 TW_U512_MAX;
 
 #define TW_U64_MAX     (0xFFFFFFFFFFFFFFFFLLU)
