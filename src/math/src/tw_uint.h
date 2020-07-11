@@ -86,4 +86,10 @@ int tw_mul(tw_u512* y, const tw_u512* a, const tw_u512* b);
  */
 int tw_div_rem(tw_u512* y, tw_u512* z, const tw_u512* a, const tw_u512* b);
 
+/* Modulus with zero check
+ * y = a mod b
+ * returns 1 if b is zero
+ */
+int tw_mod(tw_u512* y, const tw_u512* a, const tw_u512* b);
+
 #endif

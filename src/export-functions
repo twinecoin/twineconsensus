@@ -7,6 +7,7 @@ tw_th_lshift
 tw_th_rshift
 tw_th_mul
 tw_th_div_rem
+tw_th_mod
 tw_th_sha_256
 tw_th_ripemd_160
 tw_th_dsha_256

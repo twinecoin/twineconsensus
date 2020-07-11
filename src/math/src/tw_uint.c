@@ -230,3 +230,8 @@ int tw_div_rem(tw_u512* y, tw_u512* z, const tw_u512* a, const tw_u512* b) {
   *z = remainder;
   return 0;
 }
+
+int tw_mod(tw_u512* y, const tw_u512* a, const tw_u512* b) {
+  tw_u512 x;
+  return tw_div_rem(&x, y, a, b);
+}

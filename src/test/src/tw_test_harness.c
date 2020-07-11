@@ -74,6 +74,12 @@ int tw_th_div_rem(tw_u512* y, tw_u512* z, const tw_u512* a, const tw_u512* b) {
   }
   return tw_div_rem(y, z, a, b);
 }
+int tw_th_mod(tw_u512* y, const tw_u512* a, const tw_u512* b) {
+  if (tw_test_harness_lock) {
+    return 0;
+  }
+  return tw_mod(y, a, b);
+}
 
 // tw_hash functions
 tw_u512 tw_th_sha_256(const tw_u8* message, const tw_u64 len) {

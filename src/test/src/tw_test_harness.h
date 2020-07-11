@@ -34,6 +34,7 @@ int tw_th_lshift(tw_u512* y, const tw_u512*a, const tw_u32 bitshift);
 int tw_th_rshift(tw_u512* y, const tw_u512*a, const tw_u32 bitshift);
 int tw_th_mul(tw_u512* y, const tw_u512* a, const tw_u512* b);
 int tw_th_div_rem(tw_u512* y, tw_u512* z, const tw_u512* a, const tw_u512* b);
+int tw_th_mod(tw_u512* y, const tw_u512* a, const tw_u512* b);
 
 // tw_hash functions
 tw_u512 tw_th_sha_256(const tw_u8* message, const tw_u64 len);

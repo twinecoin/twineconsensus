@@ -25,7 +25,7 @@ void unlock_test_harness(int unlock) {
     tw_th_unlock_test_functions(TW_TEST_HARNESS_UNLOCK_CODE, unlock);
 }
 
-START_TEST(test_tw_th_unlock_test_functions) {
+void test_locked(char* message) {
   tw_u512 a, b, c, d, y, z;
   for (int i = 0; i < 8; i++) {
     a.d[i] = 0;
@@ -40,38 +40,30 @@ START_TEST(test_tw_th_unlock_test_functions) {
   b.d[7] = a.d[7];
   c.d[7] = a.d[7] + 1;
 
-  ck_assert_msg(tw_th_equal(&a, &b) == 0, "Test harness enabled by default for tw_th_equal");
-  ck_assert_msg(tw_th_compare(&a, &c) == 0, "Test harness enabled by default for tw_th_compare");
-  ck_assert_msg(tw_th_add(&y, &a, &b) == 0, "Test harness enabled by default for tw_th_add");
-  ck_assert_msg(tw_th_sub(&y, &a, &c) == 0, "Test harness enabled by default for tw_th_sub");
-  ck_assert_msg(tw_th_lshift(&y, &a, 1) == 0, "Test harness enabled by default for tw_th_lshift");
-  ck_assert_msg(tw_th_rshift(&y, &a, 1) == 0, "Test harness enabled by default for tw_th_rshift");
-  ck_assert_msg(tw_th_mul(&y, &a, &b) == 0, "Test harness enabled by default for tw_th_mul");
-  ck_assert_msg(tw_th_div_rem(&y, &z, &a, &d) == 0, "Test harness enabled by default for tw_th_div_rem");
+  ck_assert_msg(tw_th_equal(&a, &b) == 0, "Test harness enabled %s for tw_th_equal", message);
+  ck_assert_msg(tw_th_compare(&a, &c) == 0, "Test harness enabled %s for tw_th_compare", message);
+  ck_assert_msg(tw_th_add(&y, &a, &b) == 0, "Test harness enabled %s for tw_th_add", message);
+  ck_assert_msg(tw_th_sub(&y, &a, &c) == 0, "Test harness enabled %s for tw_th_sub", message);
+  ck_assert_msg(tw_th_lshift(&y, &a, 1) == 0, "Test harness enabled %s for tw_th_lshift", message);
+  ck_assert_msg(tw_th_rshift(&y, &a, 1) == 0, "Test harness enabled %s for tw_th_rshift", message);
+  ck_assert_msg(tw_th_mul(&y, &a, &b) == 0, "Test harness enabled %s for tw_th_mul", message);
+  ck_assert_msg(tw_th_div_rem(&y, &z, &a, &d) == 0, "Test harness enabled %s for tw_th_div_rem", message);
+  ck_assert_msg(tw_th_mod(&z, &a, &d) == 0, "Test harness enabled %s for tw_th_mod", message);
+}
+
+START_TEST(test_tw_th_unlock_test_functions) {
+  test_locked("by default");
 
   // Verify re-locks after an unlock
   unlock_test_harness(1);
   unlock_test_harness(0);
 
-  ck_assert_msg(tw_th_equal(&a, &b) == 0, "Test harness enabled after re-lock for tw_th_equal");
-  ck_assert_msg(tw_th_compare(&a, &c) == 0, "Test harness enabled after re-lock for tw_th_compare");
-  ck_assert_msg(tw_th_add(&y, &a, &b) == 0, "Test harness enabled after re-lock for tw_th_add");
-  ck_assert_msg(tw_th_sub(&y, &a, &c) == 0, "Test harness enabled after re-lock for tw_th_sub");
-  ck_assert_msg(tw_th_lshift(&y, &a, 1) == 0, "Test harness enabled after re-lock for tw_th_lshift");
-  ck_assert_msg(tw_th_rshift(&y, &a, 1) == 0, "Test harness enabled after re-lock for tw_th_rshift");
-  ck_assert_msg(tw_th_mul(&y, &a, &b) == 0, "Test harness enabled after re-lock for tw_th_mul");
-  ck_assert_msg(tw_th_div_rem(&y, &z, &a, &d) == 0, "Test harness enabled after re-lock for tw_th_div_rem");
+  test_locked("after re-lock");
 
   // Verify unlock fails with incorrect code
   tw_th_unlock_test_functions(TW_TEST_HARNESS_UNLOCK_CODE ^ 0x0040000000000000ULL, 1);
-  ck_assert_msg(tw_th_equal(&a, &b) == 0, "Test harness enabled after bad code for tw_th_equal");
-  ck_assert_msg(tw_th_compare(&a, &c) == 0, "Test harness enabled after bad code for tw_th_compare");
-  ck_assert_msg(tw_th_add(&y, &a, &b) == 0, "Test harness enabled after bad code for tw_th_add");
-  ck_assert_msg(tw_th_sub(&y, &a, &c) == 0, "Test harness enabled after bad code for tw_th_sub");
-  ck_assert_msg(tw_th_lshift(&y, &a, 1) == 0, "Test harness enabled after bad code for tw_th_lshift");
-  ck_assert_msg(tw_th_rshift(&y, &a, 1) == 0, "Test harness enabled after bad code for tw_th_rshift");
-  ck_assert_msg(tw_th_mul(&y, &a, &b) == 0, "Test harness enabled after bad code for tw_th_mul");
-  ck_assert_msg(tw_th_div_rem(&y, &z, &a, &d) == 0, "Test harness enabled after bad code for tw_th_div_rem");
+
+  test_locked("after re-lock");
 }
 END_TEST
 
@@ -355,6 +347,22 @@ START_TEST (test_tw_div_rem) {
 }
 END_TEST
 
+START_TEST (test_tw_mod) {
+  unlock_test_harness(1);
+
+  tw_u512 a, b, y;
+  for (int i = 0; i < U512_TEST_VECTORS_512X512_LENGTH; i++) {
+    a = u512_test_vectors_512x512[i].a;
+    b = u512_test_vectors_512x512[i].b;
+    int div_by_0 = u512_test_vectors_512x512[i].div_by_0;
+    ck_assert_msg(tw_th_mod(&y, &a, &b) == div_by_0, "Divide by zero check failed for vector %d", i);
+    if (!div_by_0) {
+      ck_assert_msg(tw_th_equal(&y, &u512_test_vectors_512x512[i].a_rem_b), "Modulus mismatch for vector %d", i);
+    }
+  }
+}
+END_TEST
+
 Suite * uint_suite(void) {
   Suite *s;
   TCase *tc_core;
@@ -373,6 +381,7 @@ Suite * uint_suite(void) {
   tcase_add_test(tc_core, test_tw_lshift);
   tcase_add_test(tc_core, test_tw_rshift);
   tcase_add_test(tc_core, test_tw_div_rem);
+  tcase_add_test(tc_core, test_tw_mod);
   suite_add_tcase(s, tc_core);
 
   return s;
