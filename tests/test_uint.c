@@ -36,6 +36,7 @@ START_TEST(test_tw_th_unlock_test_functions) {
     z.d[i] = 0;
   }
   a.d[7] = 0x8000000000000001;
+  a.d[0] = 0x8000000000000001;
   b.d[7] = a.d[7];
   c.d[7] = a.d[7] + 1;
 
@@ -44,6 +45,7 @@ START_TEST(test_tw_th_unlock_test_functions) {
   ck_assert_msg(tw_th_add(&y, &a, &b) == 0, "Test harness enabled by default for tw_th_add");
   ck_assert_msg(tw_th_sub(&y, &a, &c) == 0, "Test harness enabled by default for tw_th_sub");
   ck_assert_msg(tw_th_lshift(&y, &a, 1) == 0, "Test harness enabled by default for tw_th_lshift");
+  ck_assert_msg(tw_th_rshift(&y, &a, 1) == 0, "Test harness enabled by default for tw_th_rshift");
   ck_assert_msg(tw_th_mul(&y, &a, &b) == 0, "Test harness enabled by default for tw_th_mul");
   ck_assert_msg(tw_th_div_rem(&y, &z, &a, &d) == 0, "Test harness enabled by default for tw_th_div_rem");
 
@@ -56,6 +58,7 @@ START_TEST(test_tw_th_unlock_test_functions) {
   ck_assert_msg(tw_th_add(&y, &a, &b) == 0, "Test harness enabled after re-lock for tw_th_add");
   ck_assert_msg(tw_th_sub(&y, &a, &c) == 0, "Test harness enabled after re-lock for tw_th_sub");
   ck_assert_msg(tw_th_lshift(&y, &a, 1) == 0, "Test harness enabled after re-lock for tw_th_lshift");
+  ck_assert_msg(tw_th_rshift(&y, &a, 1) == 0, "Test harness enabled after re-lock for tw_th_rshift");
   ck_assert_msg(tw_th_mul(&y, &a, &b) == 0, "Test harness enabled after re-lock for tw_th_mul");
   ck_assert_msg(tw_th_div_rem(&y, &z, &a, &d) == 0, "Test harness enabled after re-lock for tw_th_div_rem");
 
@@ -66,6 +69,7 @@ START_TEST(test_tw_th_unlock_test_functions) {
   ck_assert_msg(tw_th_add(&y, &a, &b) == 0, "Test harness enabled after bad code for tw_th_add");
   ck_assert_msg(tw_th_sub(&y, &a, &c) == 0, "Test harness enabled after bad code for tw_th_sub");
   ck_assert_msg(tw_th_lshift(&y, &a, 1) == 0, "Test harness enabled after bad code for tw_th_lshift");
+  ck_assert_msg(tw_th_rshift(&y, &a, 1) == 0, "Test harness enabled after bad code for tw_th_rshift");
   ck_assert_msg(tw_th_mul(&y, &a, &b) == 0, "Test harness enabled after bad code for tw_th_mul");
   ck_assert_msg(tw_th_div_rem(&y, &z, &a, &d) == 0, "Test harness enabled after bad code for tw_th_div_rem");
 }
@@ -251,6 +255,32 @@ START_TEST (test_tw_lshift) {
 }
 END_TEST
 
+START_TEST (test_tw_rshift) {
+  unlock_test_harness(1);
+
+  for (int i = 0; i < U512_TEST_VECTORS_512X64_LENGTH; i++) {
+    tw_u512 y = {0};
+    tw_u512 a = u512_test_vectors_512x64[i].a;
+    tw_u32 bits = u512_test_vectors_512x64[i].s;
+    tw_u512 expected = u512_test_vectors_512x64[i].a_rshift;
+    int underflow = u512_test_vectors_512x64[i].a_rshift_underflow;
+    const tw_u512 a_old = a;
+
+    ck_assert_msg(tw_th_rshift(&y, &a, bits) == underflow, "Right-shift underflow check failed for vector %d", i);
+    ck_assert_msg(tw_th_equal(&expected, &y), "Right-shift mismatch for vector %d", i);
+    ck_assert_msg(tw_th_equal(&a_old, &a), "A altered for Right-shift check for vector %d", i);
+
+    a = u512_test_vectors_512x64[i].a;
+    bits = u512_test_vectors_512x64[i].s;
+    expected = u512_test_vectors_512x64[i].a_rshift;
+    underflow = u512_test_vectors_512x64[i].a_rshift_underflow;
+
+    ck_assert_msg(tw_th_rshift(&a, &a, bits) == underflow, "Right-shift underflow self-target check failed for vector %d", i);
+    ck_assert_msg(tw_th_equal(&expected, &a), "Right-shift self-target mismatch for vector %d", i);
+  }
+}
+END_TEST
+
 START_TEST (test_tw_mul) {
   unlock_test_harness(1);
 
@@ -341,6 +371,7 @@ Suite * uint_suite(void) {
   tcase_add_test(tc_core, test_tw_sub);
   tcase_add_test(tc_core, test_tw_mul);
   tcase_add_test(tc_core, test_tw_lshift);
+  tcase_add_test(tc_core, test_tw_rshift);
   tcase_add_test(tc_core, test_tw_div_rem);
   suite_add_tcase(s, tc_core);
 

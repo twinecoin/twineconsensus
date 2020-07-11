@@ -67,6 +67,12 @@ int tw_sub(tw_u512* y, const tw_u512* a, const tw_u512* b);
  */
 int tw_lshift(tw_u512* y, const tw_u512*a, const tw_u32 bitshift);
 
+/* Right shift with underflow
+ * y = a >> (bitshift & 0x1FF)
+ * returns 1 on underflow
+ */
+int tw_rshift(tw_u512* y, const tw_u512*a, const tw_u32 bitshift);
+
 /* Multiply with overflow
  * y = a * b
  * returns 1 on overflow

@@ -54,6 +54,13 @@ int tw_th_lshift(tw_u512* y, const tw_u512*a, const tw_u32 bitshift) {
   return tw_lshift(y, a, bitshift);
 }
 
+int tw_th_rshift(tw_u512* y, const tw_u512*a, const tw_u32 bitshift) {
+  if (tw_test_harness_lock) {
+    return 0;
+  }
+  return tw_rshift(y, a, bitshift);
+}
+
 int tw_th_mul(tw_u512* y, const tw_u512* a, const tw_u512* b) {
   if (tw_test_harness_lock) {
     return 0;

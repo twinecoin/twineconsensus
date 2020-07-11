@@ -89,6 +89,44 @@ int tw_lshift(tw_u512* y, const tw_u512*a, const tw_u32 bits) {
   return overflow;
 }
 
+int tw_rshift(tw_u512* y, const tw_u512*a, const tw_u32 bits) {
+  int word_shift = (bits  >> 6) & 0x7;
+  int bit_shift = bits & 63;
+  int underflow = 0;
+
+  assert(word_shift < 8);
+
+  // These words are shifted fully out of range
+  for (int i = 0; i < word_shift; i++) {
+    if (a->d[i] != 0) {
+      underflow = 1;
+      break;
+    }
+  }
+
+  // The bottom bits of this word underflows if there is a bit shift
+  if (bit_shift != 0) {
+    underflow |= (a->d[word_shift] << (64 - bit_shift)) != 0;
+  }
+
+  // These words include a portion from two of the input words except only one
+  // is required if bit_shift is zero
+  for (int i = 0; i < 8 - word_shift; i++) {
+    tw_u64 shifted_word = a->d[i + word_shift] >> bit_shift;
+    if (i < 7 - word_shift && bit_shift != 0) {
+      shifted_word |= a->d[i + word_shift + 1] << (64 - bit_shift);
+    }
+    y->d[i] = shifted_word;
+  }
+
+  // All bits in these words are fully shifted right
+  for (int i = 8 - word_shift; i < 8; i++) {
+    y->d[i] = 0;
+  }
+
+  return underflow;
+}
+
 int tw_mul(tw_u512* y, const tw_u512* a, const tw_u512* b) {
   tw_u64 a32[16];
   tw_u64 b32[16];

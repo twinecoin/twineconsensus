@@ -31,6 +31,7 @@ int tw_th_compare(const tw_u512* a, const tw_u512* b);
 int tw_th_add(tw_u512* y, const tw_u512* a, const tw_u512* b);
 int tw_th_sub(tw_u512* y, const tw_u512* a, const tw_u512* b);
 int tw_th_lshift(tw_u512* y, const tw_u512*a, const tw_u32 bitshift);
+int tw_th_rshift(tw_u512* y, const tw_u512*a, const tw_u32 bitshift);
 int tw_th_mul(tw_u512* y, const tw_u512* a, const tw_u512* b);
 int tw_th_div_rem(tw_u512* y, tw_u512* z, const tw_u512* a, const tw_u512* b);
 
