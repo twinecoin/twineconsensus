@@ -108,6 +108,9 @@ int tw_mul(tw_u512* y, const tw_u512* a, const tw_u512* b) {
   }
 
   for (int i = 0; i < 16; i++) {
+    if (a32[i] == 0) {
+      continue;
+    }
     for (int j = 0; j < 16; j++) {
       assert(i + j + 1 < 32);
       assert(i + j >= 0);
